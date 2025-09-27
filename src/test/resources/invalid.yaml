@@ -1,0 +1,70 @@
+$schema: ./sample-schema.json
+spring:
+  profiles:
+    active: test
+
+sample:
+  #  properties-example:
+  #    abc : "test123"
+  string-array-sample:
+    - aaa
+    - bbb
+    - ccc
+  boolean-sample: 123
+  string-sample: "config string"
+  integer-sample: 10
+  enum-sample: en2
+  collection-sample:
+    - test1
+    - test2
+    - test3
+  map-sample:
+    test1: test1value
+    test2: test2value
+  map-object-sample:
+    item1:
+      config-map1: abc
+      config-map2: 1000
+    item2:
+      config-map1: abc
+      config-map2: 1001
+
+
+  config-sample-nested:
+    nested-config1: nestedConfig
+  deep-level1:
+    keys:
+      idp:
+        - id: "1234"
+          param1: "1234"
+          param2: "1234"
+
+
+logging:
+  level:
+    root: info
+    sun:
+      rmi: error
+    javax:
+      management: error
+
+server:
+  error:
+    whitelabel:
+      enabled: true
+  servlet:
+    session:
+      cookie:
+        partitioned: true
+---
+spring:
+  config:
+    activate:
+      on-profile:
+        - test
+
+sample:
+  string-sample: "Test profile"
+
+
+

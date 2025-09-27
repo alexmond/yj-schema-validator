@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.alexmond</groupId>
+        <artifactId>spring-boot-actuator-extensions-root</artifactId>
+        <version>1.0.1-SNAPSHOT</version>
+    </parent>
+    <artifactId>spring-boot-actuator-sanitizer-starter</artifactId>
+    <version>1.0.1-SNAPSHOT</version>
+    <name>spring-boot-actuator-sanitizer</name>
+    <properties>
+        <java.version>17</java.version>
+    </properties>
+    <url>https://alexmond.github.io/</url>
+    <description>Spring Boot starter providing sanitization for sensitive data in actuator endpoint responses, filtering
+        out security-critical information like passwords, tokens, and secrets.
+    </description>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Alex Mondshain</name>
+            <email>alex.mondshain@gmail.com</email>
+        </developer>
+    </developers>
+    <scm>
+        <connection>scm:git:git@github.com:alexmond/spring-boot-actuator-extensions.git</connection>
+        <developerConnection>scm:git:git@github.com:alexmond/spring-boot-actuator-extensions.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/alexmond/spring-boot-actuator-extensions</url>
+    </scm>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>pl.project13.maven</groupId>
+                        <artifactId>git-commit-id-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

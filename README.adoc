@@ -1,0 +1,65 @@
+= YAML Schema Validator
+:toc:
+:toclevels: 3
+:source-highlighter: prettify
+
+A Java library for validating YAML configurations against JSON schemas, built with Spring Boot.
+
+== Features
+
+* Validates YAML files against JSON Schema definitions
+* Built on top of Spring Boot framework
+* Support for Jackson YAML/JSON parsing
+* Uses NetworkNT JSON Schema Validator
+* Java 17+ compatible
+
+== Getting Started
+
+=== Prerequisites
+
+* Java 17 or higher
+* Maven 3.6+
+
+=== Installation
+
+Add the following dependency to your `pom.xml`:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.alexmond</groupId>
+    <artifactId>yaml-schema-validation</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+----
+
+== Configuration
+
+The library supports configuration through Spring Boot's `application.yaml` or `application.properties`.
+
+Example configuration:
+
+[source,yaml]
+----
+management:
+  endpoint:
+    sanitizing:
+      enabled: true
+      mask-value: "***HIDDEN***"
+      keys:
+        - password
+        - secret
+        - token
+----
+
+== License
+
+This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
+
+== Authors
+
+* Alex Mondshain - Initial work - [Github](https://alexmond.github.io/)
+
+== Contributing
+
+Please read CONTRIBUTING.md for details on our code of conduct, and the process for submitting pull requests.
