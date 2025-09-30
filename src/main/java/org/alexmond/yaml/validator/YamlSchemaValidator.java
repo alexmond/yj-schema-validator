@@ -54,7 +54,7 @@ public class YamlSchemaValidator {
         JsonNode schemaNode = getSchemaNode(schemaPath, schemaString);
         if (schemaNode == null) return false;
 
-        // Step 3: Determine schema version from $schema
+//         Step 3: Determine schema version from $schema
         JsonSchemaFactory schemaFactory = getJsonSchemaFactory(schemaNode);
 
         // Step 4: Create JsonSchema and validate
@@ -155,7 +155,8 @@ public class YamlSchemaValidator {
     }
 
     private String fetchSchemaFromUrl(String schemaPath) {
-        try (HttpClient httpClient = createHttpClient()) {
+        try {
+            HttpClient httpClient = createHttpClient();
             HttpRequest httpRequest = createHttpRequest(schemaPath);
 
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
