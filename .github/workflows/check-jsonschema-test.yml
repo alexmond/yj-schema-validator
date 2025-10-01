@@ -24,7 +24,7 @@ jobs:
       - name: Run validation and generate JSON report
         run: |
           check-jsonschema \
-            --schema src/test/resources/sample-schema.json \
+            --schemafile src/test/resources/sample-schema.json \
             src/test/resources/*json \
             -o JSON > validation-report.json
 
