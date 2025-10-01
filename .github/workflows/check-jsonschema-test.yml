@@ -28,10 +28,8 @@ jobs:
             src/test/resources/*json \
             -o JSON > validation-report.json
 
-      - name: Upload JSON report as artifact
-        if: always()  # Upload even if validation fails
-        uses: actions/upload-artifact@v4
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          name: json-validation-report
-          path: validation-report.json
-          retention-days: 30  # Keep artifacts for 30 days
+          files: validation-report.json
+          format: json
