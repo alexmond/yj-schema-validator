@@ -1,0 +1,37 @@
+name: Validate JSON with check-jsonschema
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install check-jsonschema
+        run: pip install check-jsonschema
+
+      - name: Run validation and generate JSON report
+        run: |
+          check-jsonschema \
+            --schema src/test/resources/sample-schema.json \
+            src/test/resources/*json \
+            -o JSON > validation-report.json
+
+      - name: Upload JSON report as artifact
+        if: always()  # Upload even if validation fails
+        uses: actions/upload-artifact@v4
+        with:
+          name: json-validation-report
+          path: validation-report.json
+          retention-days: 30  # Keep artifacts for 30 days

@@ -4,11 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.*;
+import com.networknt.schema.output.OutputUnit;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.alexmond.yaml.validator.config.YamlSchemaValidatorConfig;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
@@ -23,7 +24,11 @@ import java.time.Duration;
 import java.util.Set;
 
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class YamlSchemaValidator {
+    private final YamlSchemaValidatorConfig config;
+    
     private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
     private final ObjectMapper jsonMapper = new ObjectMapper();
 
@@ -32,10 +37,10 @@ public class YamlSchemaValidator {
         JsonNode yamlNode;
         try {
             yamlNode = yamlMapper.readTree(new File(yamlPath));
-            if (schemaPath == null) {
-                schemaPath = getSchemaPathFromNode(yamlPath, yamlNode);
-            } else {
+            if (schemaPath != null && config.getSchemaPathOverride()) {
                 log.info("Using schema URL param: {}", schemaPath);
+            } else {
+                schemaPath = getSchemaPathFromNode(yamlPath, yamlNode);
             }
         } catch (IOException e) {
             log.error("Error reading or parsing YAML file: {}, {}", yamlPath, e.getMessage());
@@ -55,12 +60,23 @@ public class YamlSchemaValidator {
         if (schemaNode == null) return false;
 
 //         Step 3: Determine schema version from $schema
-        JsonSchemaFactory schemaFactory = getJsonSchemaFactory(schemaNode);
+        JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(getSchemaVersion(schemaNode));
 
         // Step 4: Create JsonSchema and validate
 
         JsonSchema schema = schemaFactory.getSchema(schemaNode);
+
+        String jsonstring = yamlNode.toString();
+        log.error("Validating YAML schema: {}", jsonstring);
+
+        OutputUnit outputUnit = schema.validate(yamlNode.toString(), InputFormat.JSON, OutputFormat.LIST, executionConfiguration -> {
+//            executionConfiguration.getExecutionConfig().setAnnotationCollectionEnabled(true);
+            executionConfiguration.getExecutionConfig().setAnnotationCollectionFilter(keyword -> true);
+            executionConfiguration.getExecutionConfig().setFormatAssertionsEnabled(true);
+        });
+
         Set<ValidationMessage> errors = schema.validate(yamlNode);
+        log.warn("YAML schema validation result: {}", outputUnit.toString());
 
         // Step 5: Output results
         if (errors.isEmpty()) {
@@ -77,32 +93,14 @@ public class YamlSchemaValidator {
         return true;
     }
 
-    private static JsonSchemaFactory getJsonSchemaFactory(JsonNode schemaNode) {
-        String schemaVersion = schemaNode.has("$schema")
-                ? schemaNode.get("$schema").asText()
-                : null;
-        JsonSchemaFactory schemaFactory;
-        // todo look for url-version mapping
-        if (schemaVersion != null) {
-            // Map $schema to SpecVersion
-            SpecVersion.VersionFlag versionFlag = switch (schemaVersion) {
-                case "https://json-schema.org/draft-04/schema#" -> SpecVersion.VersionFlag.V4;
-                case "https://json-schema.org/draft-06/schema#" -> SpecVersion.VersionFlag.V6;
-                case "https://json-schema.org/draft-07/schema#" -> SpecVersion.VersionFlag.V7;
-                case "https://json-schema.org/draft/2019-09/schema" -> SpecVersion.VersionFlag.V201909;
-                case "https://json-schema.org/draft/2020-12/schema" -> SpecVersion.VersionFlag.V202012;
-                default -> {
-                    log.error("Unsupported $schema version: {}, defaulting to V202012", schemaVersion);
-                    yield SpecVersion.VersionFlag.V202012;
-                }
-            };
-            schemaFactory = JsonSchemaFactory.getInstance(versionFlag);
-        } else {
-            // Default to Draft 07 if $schema is missing
-            log.warn("$schema not specified, defaulting to V202012");
-            schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
+    public SpecVersion.VersionFlag getSchemaVersion(JsonNode schemaNode) {
+        SpecVersion.VersionFlag defaultVersion = SpecVersion.VersionFlag.V202012;
+        try {
+            return SpecVersionDetector.detect(schemaNode);
+        }catch (JsonSchemaException e) {
+            log.warn("Error detecting schema version: {}, setting default to {}", e.getMessage(),defaultVersion);
+            return defaultVersion;
         }
-        return schemaFactory;
     }
 
     private JsonNode getSchemaNode(String schemaPath, String schemaString) {
@@ -139,9 +137,6 @@ public class YamlSchemaValidator {
         return schemaPath;
     }
 
-    private static final int HTTP_CONNECTION_TIMEOUT_SECONDS = 10;
-    private static final int HTTP_SUCCESS_STATUS = 200;
-
     private String getSchema(String schemaPath) {
         if (isHttpUrl(schemaPath)) {
             return fetchSchemaFromUrl(schemaPath);
@@ -154,9 +149,12 @@ public class YamlSchemaValidator {
         return schemaPath.startsWith("http://") || schemaPath.startsWith("https://");
     }
 
+    private static final int HTTP_SUCCESS_STATUS = 200;
+
     private String fetchSchemaFromUrl(String schemaPath) {
         try {
             HttpClient httpClient = createHttpClient();
+
             HttpRequest httpRequest = createHttpRequest(schemaPath);
 
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
@@ -175,7 +173,8 @@ public class YamlSchemaValidator {
 
     private HttpClient createHttpClient() {
         return HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(HTTP_CONNECTION_TIMEOUT_SECONDS))
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .connectTimeout(config.getHttpTimeout())
                 .build();
     }
 
