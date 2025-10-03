@@ -18,9 +18,15 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import javax.net.ssl.*;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @Slf4j
@@ -28,6 +34,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class YamlSchemaValidator {
     private final YamlSchemaValidatorConfig config;
+    Map<String, JsonSchema> schemaCache = new HashMap<>();
     
     private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
     private final ObjectMapper jsonMapper = new ObjectMapper();
@@ -37,7 +44,7 @@ public class YamlSchemaValidator {
         JsonNode yamlNode;
         try {
             yamlNode = yamlMapper.readTree(new File(yamlPath));
-            if (schemaPath != null && config.getSchemaPathOverride()) {
+            if (schemaPath != null) {
                 log.info("Using schema URL param: {}", schemaPath);
             } else {
                 schemaPath = getSchemaPathFromNode(yamlPath, yamlNode);
@@ -49,22 +56,27 @@ public class YamlSchemaValidator {
             log.error("Error determining schema path: {}", e.getMessage());
             return false;
         }
+        JsonSchema schema;
+        if(!schemaCache.containsKey(schemaPath)) {
+            String schemaString = getSchema(schemaPath);
+            if (schemaString == null) {
+                return false;
+            }
 
-        String schemaString = getSchema(schemaPath);
-        if (schemaString == null) {
-            return false;
-        }
-
-        // Step 2: Load JSON Schema
-        JsonNode schemaNode = getSchemaNode(schemaPath, schemaString);
-        if (schemaNode == null) return false;
+            // Step 2: Load JSON Schema
+            JsonNode schemaNode = getSchemaNode(schemaPath, schemaString);
+            if (schemaNode == null) return false;
 
 //         Step 3: Determine schema version from $schema
-        JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(getSchemaVersion(schemaNode));
+            JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(getSchemaVersion(schemaNode));
 
-        // Step 4: Create JsonSchema and validate
+            // Step 4: Create JsonSchema and validate
 
-        JsonSchema schema = schemaFactory.getSchema(schemaNode);
+            schema = schemaFactory.getSchema(schemaNode);
+            schemaCache.put(schemaPath, schema);
+        } else {
+            schema = schemaCache.get(schemaPath);
+        }
 
         String jsonstring = yamlNode.toString();
         log.error("Validating YAML schema: {}", jsonstring);
@@ -172,10 +184,33 @@ public class YamlSchemaValidator {
     }
 
     private HttpClient createHttpClient() {
-        return HttpClient.newBuilder()
+        HttpClient.Builder builder = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.NORMAL)
-                .connectTimeout(config.getHttpTimeout())
-                .build();
+                .connectTimeout(config.getHttpTimeout());
+
+        if (config.isIgnoreSslErrors()) {
+            try {
+                SSLContext sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, new TrustManager[]{new X509TrustManager() {
+                    public void checkClientTrusted(X509Certificate[] chain, String authType) {
+                    }
+
+                    public void checkServerTrusted(X509Certificate[] chain, String authType) {
+                    }
+
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return new X509Certificate[0];
+                    }
+                }}, new SecureRandom());
+
+                builder.sslContext(sslContext)
+                        .sslParameters(new SSLParameters());
+            } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                log.warn("Failed to initialize SSL context for ignoring certificate validation: {}", e.getMessage());
+            }
+        }
+
+        return builder.build();
     }
 
     private HttpRequest createHttpRequest(String schemaPath) {

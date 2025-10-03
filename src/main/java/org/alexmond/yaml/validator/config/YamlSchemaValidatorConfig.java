@@ -39,4 +39,6 @@ public class YamlSchemaValidatorConfig {
     private Boolean schemaPathOverride = false;
 
     private ReportType reportType = ReportType.TEXT;
+
+    private boolean isIgnoreSslErrors = true;
 }
