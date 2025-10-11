@@ -27,37 +27,10 @@ sample:
     item1:
       config-map1: abc
       config-map2: 1000
-    item2:
+    item2:abc
       config-map1: abc
       config-map2: 1001
 
-
-  config-sample-nested:
-    nested-config1: nestedConfig
-  deep-level1:
-    keys:
-      idp:
-        - id: "1234"
-          param1: "1234"
-          param2: "1234"
-
-
-logging:
-  level:
-    root: info
-    sun:
-      rmi: error
-    javax:
-      management: error
-
-server:
-  error:
-   whitelabel:
-      enabled: true
-  servlet:
-    session:
-      cookie:
-      partitioned: true
 
 
 

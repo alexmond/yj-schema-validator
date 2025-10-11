@@ -27,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 @Slf4j
 @Component
@@ -35,118 +34,105 @@ import java.util.Set;
 public class YamlSchemaValidator {
     private final YamlSchemaValidatorConfig config;
     Map<String, JsonSchema> schemaCache = new HashMap<>();
-    
+
     private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
     private final ObjectMapper jsonMapper = new ObjectMapper();
 
-    public Boolean validate(String yamlPath, String schemaPath) {
+    public Map<String, OutputUnit> validate(String filePath, String schemaPath) {
         // Step 1: Parse YAML to JSON
-        JsonNode yamlNode;
+        JsonNode fileNode;
         try {
-            yamlNode = yamlMapper.readTree(new File(yamlPath));
+            fileNode = getYamlJsonNode(filePath, Files.readString(Paths.get(filePath)));
             if (schemaPath != null) {
-                log.info("Using schema URL param: {}", schemaPath);
+                log.debug("Using schema URL param: {}", schemaPath);
             } else {
-                schemaPath = getSchemaPathFromNode(yamlPath, yamlNode);
+                schemaPath = getSchemaPathFromNode(filePath, fileNode);
             }
-        } catch (IOException e) {
-            log.error("Error reading or parsing YAML file: {}, {}", yamlPath, e.getMessage());
-            return false;
-        } catch (IllegalArgumentException e) {
-            log.error("Error determining schema path: {}", e.getMessage());
-            return false;
-        }
-        JsonSchema schema;
-        if(!schemaCache.containsKey(schemaPath)) {
-            String schemaString = getSchema(schemaPath);
-            if (schemaString == null) {
-                return false;
-            }
-
-            // Step 2: Load JSON Schema
-            JsonNode schemaNode = getSchemaNode(schemaPath, schemaString);
-            if (schemaNode == null) return false;
+            JsonSchema schema;
+            if (schemaCache.containsKey(schemaPath)) {
+                schema = schemaCache.get(schemaPath);
+            } else {
+                String schemaString = getSchema(schemaPath);
+                // Step 2: Load JSON/YAML Schema
+                JsonNode schemaNode = getYamlJsonNode(schemaPath, schemaString);
 
 //         Step 3: Determine schema version from $schema
-            JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(getSchemaVersion(schemaNode));
+                JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(getSchemaVersion(schemaNode));
 
-            // Step 4: Create JsonSchema and validate
-
-            schema = schemaFactory.getSchema(schemaNode);
-            schemaCache.put(schemaPath, schema);
-        } else {
-            schema = schemaCache.get(schemaPath);
-        }
-
-        String jsonstring = yamlNode.toString();
-        log.error("Validating YAML schema: {}", jsonstring);
-
-        OutputUnit outputUnit = schema.validate(yamlNode.toString(), InputFormat.JSON, OutputFormat.LIST, executionConfiguration -> {
-//            executionConfiguration.getExecutionConfig().setAnnotationCollectionEnabled(true);
-            executionConfiguration.getExecutionConfig().setAnnotationCollectionFilter(keyword -> true);
-            executionConfiguration.getExecutionConfig().setFormatAssertionsEnabled(true);
-        });
-
-        Set<ValidationMessage> errors = schema.validate(yamlNode);
-        log.warn("YAML schema validation result: {}", outputUnit.toString());
-
-        // Step 5: Output results
-        if (errors.isEmpty()) {
-            log.info("Validation successful: YAML conforms to the JSON Schema : {})", schemaPath);
-        } else {
-            log.error("Validation failed with the following errors:");
-            for (ValidationMessage error : errors) {
-                log.error(error.getMessage());
+                // Step 4: Create JsonSchema and cache
+                schema = schemaFactory.getSchema(schemaNode);
+                schemaCache.put(schemaPath, schema);
             }
-            log.error("YAML validation failed");
-            return false;
-        }
 
-        return true;
+            String jsonstring = fileNode.toString();
+            log.debug("Validating YAML schema: {}", jsonstring);
+
+            OutputUnit outputUnit = schema.validate(fileNode.toString(), InputFormat.JSON, OutputFormat.LIST, executionConfiguration -> {
+                executionConfiguration.getExecutionConfig().setAnnotationCollectionFilter(keyword -> true);
+                executionConfiguration.getExecutionConfig().setFormatAssertionsEnabled(true);
+            });
+            log.debug("Validation successful: YAML conforms to the JSON Schema: {}", schemaPath);
+            return Map.of(filePath, outputUnit);
+        } catch (IOException e) {
+            log.debug("Error reading file: {}", e.toString());//TODO: fix debug messaging
+            return genericError(filePath, e.toString());
+        } catch ( IllegalArgumentException e ) { // TODO: check what it is and where it is coming from and if it is appropriate
+            log.debug("Error determining schema path: {}", e.getMessage());
+            return genericError(filePath, e.getMessage());
+        } catch ( YamlValidationException e ) {
+            log.debug("YAML validation error: {}", e.getMessage());
+            return genericError(filePath, e.getMessage());
+        } catch (Exception e) {
+            log.debug("Error validating:", e);
+            return genericError(filePath, e.getMessage());
+        }
+    }
+
+    private Map<String, OutputUnit> genericError(String filePath, String message) {
+        OutputUnit outputUnit = new OutputUnit();
+        outputUnit.setValid(false);
+        outputUnit.setErrors( Map.of("error", message));
+        return Map.of(filePath, outputUnit);
     }
 
     public SpecVersion.VersionFlag getSchemaVersion(JsonNode schemaNode) {
         SpecVersion.VersionFlag defaultVersion = SpecVersion.VersionFlag.V202012;
         try {
             return SpecVersionDetector.detect(schemaNode);
-        }catch (JsonSchemaException e) {
-            log.warn("Error detecting schema version: {}, setting default to {}", e.getMessage(),defaultVersion);
+        } catch (JsonSchemaException e) {
+            log.warn("Error detecting schema version: {}, setting default to {}", e.getMessage(), defaultVersion);
             return defaultVersion;
         }
     }
 
-    private JsonNode getSchemaNode(String schemaPath, String schemaString) {
+    private JsonNode getYamlJsonNode(String filePath, String content){
         JsonNode schemaNode;
         try {
-            schemaNode = jsonMapper.readTree(schemaString);
+            schemaNode = jsonMapper.readTree(content);
         } catch (JsonProcessingException e) {
-            // todo fix message
-            log.error("Error parsing URL as json, trying yaml: {}", schemaPath);
-            // If JSON parsing fails, try YAML
+            log.debug("Error parsing schema as JSON, trying YAML: {}, {}", filePath, e.getMessage());
             try {
-                schemaNode = yamlMapper.readTree(schemaString);
+                schemaNode = yamlMapper.readTree(content);
             } catch (JsonProcessingException ex) {
-                // todo fix message
-                log.error("Error parsing schema file as YAML: {}, {}", schemaPath, ex.getMessage());
-                return null;
+                log.debug("Error parsing schema as YAML: {}, {}", filePath, ex.getMessage());
+                throw new YamlValidationException(ex, null, filePath);
             }
         }
         return schemaNode;
     }
 
     private String getSchemaPathFromNode(String yamlPath, JsonNode jsonNode) {
-        // Check if YAML has schema URL
         JsonNode yamlSchemaNode = jsonNode.get("$schema");
-        if (yamlSchemaNode == null && !StringUtils.hasLength(yamlSchemaNode.asText())) {
+        if (yamlSchemaNode == null || !StringUtils.hasLength(yamlSchemaNode.asText())) {
             throw new IllegalArgumentException("No schema found in YAML file or provided as parameter");
         }
 
-        String schemaPath = yamlSchemaNode.asText();
-        log.info("Using schema URL from YAML: {}", schemaPath);
-        if (!isHttpUrl(schemaPath)) {
-            schemaPath = new File(new File(yamlPath).getParentFile(), schemaPath).getPath();
+        String detectedSchemaPath = yamlSchemaNode.asText();
+        log.debug("Using schema URL from YAML: {}", detectedSchemaPath);
+        if (!isHttpUrl(detectedSchemaPath)) {
+            detectedSchemaPath = new File(new File(yamlPath).getParentFile(), detectedSchemaPath).getPath();
         }
-        return schemaPath;
+        return detectedSchemaPath;
     }
 
     private String getSchema(String schemaPath) {
@@ -172,14 +158,16 @@ public class YamlSchemaValidator {
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != HTTP_SUCCESS_STATUS) {
-                log.error("Error fetching schema from URL {} HTTP request failed with status code: {}", schemaPath, response.statusCode());
-                return null;
+                String msg = "HTTP request failed with status code " + response.statusCode() + " for " + schemaPath;
+                log.debug(msg);
+                throw new YamlValidationException(msg, null, schemaPath);
             }
 
             return response.body();
-        } catch (IOException | InterruptedException e) {
-            log.error("Error fetching schema from URL: {}, with Error {}", schemaPath, e.getMessage());
-            return null;
+        } catch (IOException | InterruptedException e) { // TODO: fix debug messaging
+            String msg = "Error fetching schema from URL: " + schemaPath;
+            log.error("{}, {}", msg, e.getMessage());
+            throw new YamlValidationException(e, null, schemaPath);
         }
     }
 
@@ -222,10 +210,11 @@ public class YamlSchemaValidator {
 
     private String readSchemaFromFile(String schemaPath) {
         try {
-            return new String(Files.readAllBytes(Paths.get(schemaPath)));
+            return Files.readString(Paths.get(schemaPath));
         } catch (IOException e) {
-            log.error("Error reading schema file: {}, {}", schemaPath, e.getMessage());
-            return null;
+            String msg = "Error reading schema file";
+            log.error("{}, {}", msg, e.getMessage());
+            throw new YamlValidationException(e, null, schemaPath);
         }
     }
 }
