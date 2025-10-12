@@ -40,58 +40,62 @@ public class YamlSchemaValidator {
 
     public Map<String, OutputUnit> validate(String filePath, String schemaPath) {
         // Step 1: Parse YAML to JSON
-        JsonNode fileNode;
         try {
-            fileNode = getYamlJsonNode(filePath, Files.readString(Paths.get(filePath)));
-            if (schemaPath != null) {
-                log.debug("Using schema URL param: {}", schemaPath);
-            } else {
-                schemaPath = getSchemaPathFromNode(filePath, fileNode);
+            JsonNode fileNode = getYamlJsonNode(filePath, Files.readString(Paths.get(filePath)));
+            if (!config.getSchemaPathOverride()) {
+                var schemaPathFromNode = getSchemaPathFromNode(filePath, fileNode);
+                if (schemaPathFromNode != null) {
+                    schemaPath = schemaPathFromNode;
+                }
+                if (schemaPath == null) {
+                    return genericError(filePath, "No schema found in YAML file or provided as parameter");
+                }
             }
-            JsonSchema schema;
-            if (schemaCache.containsKey(schemaPath)) {
-                schema = schemaCache.get(schemaPath);
-            } else {
-                String schemaString = getSchema(schemaPath);
-                // Step 2: Load JSON/YAML Schema
-                JsonNode schemaNode = getYamlJsonNode(schemaPath, schemaString);
-
-//         Step 3: Determine schema version from $schema
-                JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(getSchemaVersion(schemaNode));
-
-                // Step 4: Create JsonSchema and cache
-                schema = schemaFactory.getSchema(schemaNode);
-                schemaCache.put(schemaPath, schema);
-            }
-
-            String jsonstring = fileNode.toString();
-            log.debug("Validating YAML schema: {}", jsonstring);
+            JsonSchema schema = getSchemaByPath(schemaPath);
 
             OutputUnit outputUnit = schema.validate(fileNode.toString(), InputFormat.JSON, OutputFormat.LIST, executionConfiguration -> {
                 executionConfiguration.getExecutionConfig().setAnnotationCollectionFilter(keyword -> true);
                 executionConfiguration.getExecutionConfig().setFormatAssertionsEnabled(true);
             });
+
             log.debug("Validation successful: YAML conforms to the JSON Schema: {}", schemaPath);
             return Map.of(filePath, outputUnit);
-        } catch (IOException e) {
-            log.debug("Error reading file: {}", e.toString());//TODO: fix debug messaging
+        } catch (IOException e) { // <---------- from Files.readString, line 44
+            log.debug("Error reading file", e); // TODO: fix debug messaging
             return genericError(filePath, e.toString());
-        } catch ( IllegalArgumentException e ) { // TODO: check what it is and where it is coming from and if it is appropriate
-            log.debug("Error determining schema path: {}", e.getMessage());
-            return genericError(filePath, e.getMessage());
-        } catch ( YamlValidationException e ) {
-            log.debug("YAML validation error: {}", e.getMessage());
+        } catch (IllegalArgumentException | YamlValidationException e) { // TODO: check what it is and where it is coming from and if it is appropriate
+            // IllegalArgumentException - from getSchemaPathFromNode
+            // YamlValidationException - from getYamlJsonNode, getSchemaByPath
+            log.debug("{}", filePath, e);
             return genericError(filePath, e.getMessage());
         } catch (Exception e) {
-            log.debug("Error validating:", e);
+            log.debug("Unexpected Exception", e);
             return genericError(filePath, e.getMessage());
         }
+    }
+
+    private JsonSchema getSchemaByPath(String schemaPath) {
+        if (schemaCache.containsKey(schemaPath)) {
+            return schemaCache.get(schemaPath);
+        }
+        String schemaString = getSchema(schemaPath);
+        // Step 2: Load JSON/YAML Schema
+        JsonNode schemaNode = getYamlJsonNode(schemaPath, schemaString);
+
+//         Step 3: Determine schema version from $schema
+        JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(getSchemaVersion(schemaNode));
+
+        // Step 4: Create JsonSchema and cache
+        JsonSchema schema = schemaFactory.getSchema(schemaNode);
+        schemaCache.put(schemaPath, schema);
+
+        return schema;
     }
 
     private Map<String, OutputUnit> genericError(String filePath, String message) {
         OutputUnit outputUnit = new OutputUnit();
         outputUnit.setValid(false);
-        outputUnit.setErrors( Map.of("error", message));
+        outputUnit.setErrors(Map.of("error", message));
         return Map.of(filePath, outputUnit);
     }
 
@@ -108,7 +112,7 @@ public class YamlSchemaValidator {
     private JsonNode getYamlJsonNode(String filePath, String content){
         JsonNode schemaNode;
         try {
-            schemaNode = jsonMapper.readTree(content);
+            return jsonMapper.readTree(content);
         } catch (JsonProcessingException e) {
             log.debug("Error parsing schema as JSON, trying YAML: {}, {}", filePath, e.getMessage());
             try {

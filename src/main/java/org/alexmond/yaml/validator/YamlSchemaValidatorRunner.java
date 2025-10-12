@@ -13,24 +13,27 @@ import org.springframework.stereotype.Component;
 public class YamlSchemaValidatorRunner implements ApplicationRunner {
 
     private final YamlSchemaValidatorConfig config;
-    private final YamlSchemaValidator  yamlSchemaValidator;
+    private final YamlSchemaValidator yamlSchemaValidator;
 
     @Override
     public void run(ApplicationArguments args) {
-        // Parse command-line arguments
-//        if (yamlPath == null || schemaPath == null) {
         log.warn(args.toString());
-//        if (config.getFile() == null) {
-//            log.error("Usage: java -jar app.jar --file=<yaml/json_file> --schema=<schema_file>");
-//            throw new RuntimeException("Missing required arguments");
-//        }
-        if(!args.getNonOptionArgs().isEmpty())
-            args.getNonOptionArgs().forEach(file -> {
-                try {
-                    yamlSchemaValidator.validate(file, config.getSchema());
-                } catch (RuntimeException e) {
-                    log.error("Runtime error during validation", e);
-                }
-            });
+        validateConfig(args);
+
+        args.getNonOptionArgs().forEach(file -> {
+            try {
+                yamlSchemaValidator.validate(file, config.getSchema());
+            } catch (RuntimeException e) {
+                log.error("Unexpected error during validation", e);
+            }
+        });
+    }
+
+    private void validateConfig(ApplicationArguments args) {
+        if (args.getNonOptionArgs().isEmpty())
+            throw new IllegalArgumentException("At least one YAML/JSON file must be provided as a non-option argument");
+        if (config.getSchemaPathOverride() && config.getSchema() == null) {
+            throw new IllegalArgumentException("Schema path must be provided when schemaPathOverride is enabled");
+        }
     }
 }
