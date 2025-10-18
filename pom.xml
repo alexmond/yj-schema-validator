@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>org.alexmond</groupId>
-    <artifactId>yj-schema-validation</artifactId>
+    <artifactId>yj-schema-validator</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>yj-schema-validation</name>
+    <name>yj-schema-validator</name>
     <packaging>jar</packaging>
     <properties>
         <java.version>17</java.version>
@@ -29,9 +29,9 @@
         </license>
     </licenses>
     <scm>
-        <connection>scm:git:git@github.com:alexmond/yaml-schema-validation.git</connection>
-        <developerConnection>scm:git:git@github.com:alexmond/yaml-schema-validation.git</developerConnection>
-        <url>https://github.com/alexmond/yaml-schema-validation</url>
+        <connection>scm:git:git@github.com:alexmond/yj-schema-validator.git</connection>
+        <developerConnection>scm:git:git@github.com:alexmond/yj-schema-validator.git</developerConnection>
+        <url>https://github.com/alexmond/yj-schema-validator</url>
         <tag>HEAD</tag>
     </scm>
     <developers>

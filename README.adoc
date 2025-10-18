@@ -30,14 +30,14 @@ Run the validator using:
 
 [source,shell]
 ----
-java -jar target/yaml-schema-validator.jar --file=<yaml/json_file> --schema=<schema_file>
+java -jar target/yj-schema-validator.jar --file=<yaml/json_file> --schema=<schema_file>
 ----
 
 Or validate multiple files:
 
 [source,shell]
 ----
-java -jar target/yaml-schema-validator.jar file1.yaml file2.yaml --schema=schema.json
+java -jar target/yj-schema-validator.jar file1.yaml file2.yaml --schema=schema.json
 ----
 
 === Usage Examples
@@ -45,13 +45,13 @@ java -jar target/yaml-schema-validator.jar file1.yaml file2.yaml --schema=schema
 .Validate a single YAML file
 [source,shell]
 ----
-java -jar yaml-schema-validator.jar --file=config.yaml --schema=schema.json
+java -jar yj-schema-validator.jar --file=config.yaml --schema=schema.json
 ----
 
 .Validate multiple YAML files
 [source,shell]
 ----
-java -jar yaml-schema-validator.jar config1.yaml config2.yaml --schema=schema.json
+java -jar yj-schema-validator.jar config1.yaml config2.yaml --schema=schema.json
 ----
 
 === Configuration Options

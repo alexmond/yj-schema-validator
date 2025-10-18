@@ -13,7 +13,7 @@ The validator can be run using the following command:
 
 [source,shell]
 ----
-java -jar yaml-schema-validator.jar [options] <file1> <file2> ...
+java -jar yj-schema-validator.jar [options] <file1> <file2> ...
 ----
 
 === Configuration Options
@@ -37,13 +37,13 @@ java -jar yaml-schema-validator.jar [options] <file1> <file2> ...
 .Validate a single YAML file
 [source,shell]
 ----
-java -jar yaml-schema-validator.jar config.yaml --schema=schema.json
+java -jar yj-schema-validator.jar config.yaml --schema=schema.json
 ----
 
 .Validate multiple YAML files
 [source,shell]
 ----
-java -jar yaml-schema-validator.jar config1.yaml config2.yaml --schema=schema.json
+java -jar yj-schema-validator.jar config1.yaml config2.yaml --schema=schema.json
 ----
 
 The validator will exit with code 0 if all files are valid, and code 1 if any validation errors are found or if there are configuration errors.
