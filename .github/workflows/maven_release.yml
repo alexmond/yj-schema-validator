@@ -69,5 +69,7 @@ jobs:
           tag_name: ${{ github.event.inputs.releaseVersion }}
           name: Release ${{ github.event.inputs.releaseVersion }}
           generate_release_notes: true
+          files: |
+            target/yj-schema-validator-${{ github.event.inputs.releaseVersion }}.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
