@@ -2,29 +2,49 @@
 :toc: left
 :sectnums:
 
-== Introduction
+== YAML Schema Validator
 
-A collection of extensions and utilities for Spring Boot Actuator, providing enhanced monitoring and health check capabilities for your Spring Boot applications.
+The YAML Schema Validator is a command-line utility that validates YAML and JSON files against JSON schema definitions.
+It's built with Spring Boot and provides a simple way to ensure your configuration files comply with predefined schemas.
 
-== Modules
+=== Usage
 
-=== spring-boot-health-checks
+The validator can be run using the following command:
 
-Extension module that provides additional health check indicators for comprehensive application monitoring.
-These indicators help track various aspects of your application's health status and performance metrics.
+[source,shell]
+----
+java -jar yaml-schema-validator.jar [options] <file1> <file2> ...
+----
 
-=== spring-boot-actuator-sanitizer
+=== Configuration Options
 
-Utility library designed to sanitize sensitive information in actuator endpoint responses.
-This module helps ensure secure exposure of monitoring data by filtering out confidential details.
+[cols="1,2"]
+|===
+|Option |Description
 
-=== spring-boot-test-app
+|--schema=<path>
+|Path to the JSON schema file (required unless schemaPathOverride is false)
 
-Sample Spring Boot application that demonstrates the practical usage of the actuator extensions.
-Use this module as a reference for implementing the extensions in your own applications.
+|--schemaPathOverride
+|If set, the schema path must be provided via --schema option
 
-== Requirements
+|--help
+|Show help message
+|===
 
-* Java 17 or higher
-* Spring Boot 3.5.3
-* Maven build tool
+=== Examples
+
+.Validate a single YAML file
+[source,shell]
+----
+java -jar yaml-schema-validator.jar config.yaml --schema=schema.json
+----
+
+.Validate multiple YAML files
+[source,shell]
+----
+java -jar yaml-schema-validator.jar config1.yaml config2.yaml --schema=schema.json
+----
+
+The validator will exit with code 0 if all files are valid, and code 1 if any validation errors are found or if there are configuration errors.
+
