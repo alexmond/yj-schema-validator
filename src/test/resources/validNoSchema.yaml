@@ -1,7 +1,8 @@
-$schema: ./sample-schema.json
+---
 spring:
   profiles:
-    active: test
+    active:
+      - test
 
 sample:
   #  properties-example:
@@ -10,7 +11,7 @@ sample:
     - aaa
     - bbb
     - ccc
-  boolean-sample: 123
+  boolean-sample: true
   string-sample: "config string"
   integer-sample: 10
   enum-sample: en2
@@ -50,12 +51,8 @@ logging:
 
 server:
   error:
-    whitelabel:
+   whitelabel:
       enabled: true
-  servlet:
-    session:
-      cookie:
-        partitioned: true
 
 
 

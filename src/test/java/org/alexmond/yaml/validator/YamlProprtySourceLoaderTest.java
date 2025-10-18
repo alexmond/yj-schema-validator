@@ -17,7 +17,7 @@ import org.springframework.core.io.Resource;
 import java.util.*;
 
 @Slf4j
-public class YamlProprtySourceLoader {
+public class YamlProprtySourceLoaderTest {
 
     @ParameterizedTest
     @CsvSource({

@@ -1,0 +1,251 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "YJValidify",
+          "version": "1.0",
+          "informationUri": "https://github.com/your-repo/yjvalidify",
+          "rules": [
+            {
+              "id": "NO_SCHEMA_FOUND",
+              "shortDescription": {
+                "text": "No schema found in YAML file or provided as parameter"
+              },
+              "helpUri": "https://json-schema.org/understanding-json-schema/reference/schema.html",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": ["validation", "schema-missing"]
+              }
+            },
+            {
+              "id": "YAML_PARSE_ERROR",
+              "shortDescription": {
+                "text": "YAML parsing exception"
+              },
+              "helpUri": "https://yaml.org/spec/1.2.2/",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": ["syntax", "parse-error"]
+              }
+            },
+            {
+              "id": "TYPE_MISMATCH",
+              "shortDescription": {
+                "text": "Type mismatch in schema validation"
+              },
+              "helpUri": "https://json-schema.org/understanding-json-schema/reference/generic.html#type",
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": ["data-validation", "type-error"]
+              }
+            }
+          ]
+        }
+      },
+      "originalUriBaseIds": {
+        "SRCROOT": {
+          "uri": "%GITHUB_WORKSPACE%"
+        }
+      },
+      "artifacts": [
+        {
+          "location": {
+            "uri": "src/test/resources/application.yaml",
+            "uriBaseId": "SRCROOT"
+          },
+          "kind": "sourceCode"
+        },
+        {
+          "location": {
+            "uri": "src/test/resources/badformat.yaml",
+            "uriBaseId": "SRCROOT"
+          },
+          "kind": "sourceCode"
+        },
+        {
+          "location": {
+            "uri": "src/test/resources/empty.yaml",
+            "uriBaseId": "SRCROOT"
+          },
+          "kind": "sourceCode"
+        },
+        {
+          "location": {
+            "uri": "src/test/resources/invalid.yaml",
+            "uriBaseId": "SRCROOT"
+          },
+          "kind": "sourceCode"
+        },
+        {
+          "location": {
+            "uri": "src/test/resources/remoteValid.yaml",
+            "uriBaseId": "SRCROOT"
+          },
+          "kind": "sourceCode"
+        },
+        {
+          "location": {
+            "uri": "src/test/resources/sample-schema.yaml",
+            "uriBaseId": "SRCROOT"
+          },
+          "kind": "sourceCode"
+        },
+        {
+          "location": {
+            "uri": "src/test/resources/valid.yaml",
+            "uriBaseId": "SRCROOT"
+          },
+          "kind": "sourceCode"
+        },
+        {
+          "location": {
+            "uri": "src/test/resources/validNoSchema.yaml",
+            "uriBaseId": "SRCROOT"
+          },
+          "kind": "sourceCode"
+        },
+        {
+          "location": {
+            "uri": "src/test/resources/validParam.yaml",
+            "uriBaseId": "SRCROOT"
+          },
+          "kind": "sourceCode"
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "NO_SCHEMA_FOUND",
+          "level": "error",
+          "message": {
+            "text": "No schema found in YAML file or provided as parameter"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/test/resources/application.yaml",
+                  "index": 0
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "primary": "no-schema-application-yaml"
+          }
+        },
+        {
+          "ruleId": "YAML_PARSE_ERROR",
+          "level": "error",
+          "message": {
+            "text": "com.fasterxml.jackson.dataformat.yaml.snakeyaml.error.MarkedYAMLException: while scanning a simple key\n in 'reader', line 30, column 5:\n        item2:abc\n        ^\ncould not find expected ':'\n in 'reader', line 31, column 18:\n          config-map1: abc\n                     ^\n\n at [Source: (StringReader); line: 29, column: 24]"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/test/resources/badformat.yaml",
+                  "index": 1
+                },
+                "region": {
+                  "startLine": 30,
+                  "startColumn": 5,
+                  "endLine": 31,
+                  "endColumn": 18
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "primary": "yaml-parse-badformat-line30"
+          }
+        },
+        {
+          "ruleId": "NO_SCHEMA_FOUND",
+          "level": "error",
+          "message": {
+            "text": "No schema found in YAML file or provided as parameter"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/test/resources/empty.yaml",
+                  "index": 2
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "primary": "no-schema-empty-yaml"
+          }
+        },
+        {
+          "ruleId": "TYPE_MISMATCH",
+          "level": "error",
+          "message": {
+            "text": "integer found, boolean expected at {0}",
+            "arguments": ["$.sample.boolean-sample"]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/test/resources/invalid.yaml",
+                  "index": 3
+                },
+                "region": {
+                  "startLine": 13,
+                  "startColumn": 19
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "primary": "type-mismatch-invalid-yaml-boolean"
+          }
+        },
+        {
+          "ruleId": "NO_SCHEMA_FOUND",
+          "level": "error",
+          "message": {
+            "text": "No schema found in YAML file or provided as parameter"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/test/resources/validNoSchema.yaml",
+                  "index": 7
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "primary": "no-schema-valid-no-schema-yaml"
+          }
+        }
+      ]
+    }
+  ]
+}

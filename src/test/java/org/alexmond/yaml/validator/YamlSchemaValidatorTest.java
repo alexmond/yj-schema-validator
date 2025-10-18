@@ -9,12 +9,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @Slf4j
 public class YamlSchemaValidatorTest {
 
@@ -38,8 +40,8 @@ public class YamlSchemaValidatorTest {
 
     @ParameterizedTest
     @CsvSource({
-            "src/test/resources/valid.yaml,src/test/resources/missing-schema.yaml,NoSuchFileException",
-            "src/test/resources/valid.yaml,https://alexmond.github.io/spring-boot-config-json-schema-starter/current/_attachments/missing.json,HTTP request failed with status code 404",
+            "src/test/resources/validNoSchema.yaml,src/test/resources/missing-schema.yaml,NoSuchFileException",
+            "src/test/resources/validNoSchema.yaml,https://alexmond.github.io/spring-boot-config-json-schema-starter/current/_attachments/missing.json,HTTP request failed with status code 404",
             "src/test/resources/missingfile.yaml,,NoSuchFileException",
             "src/test/resources/empty.yaml,,No schema found in YAML file or provided as parameter",
             "src/test/resources/badformat.yaml,,MarkedYAMLException",

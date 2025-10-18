@@ -42,7 +42,7 @@ public class YamlSchemaValidator {
         // Step 1: Parse YAML to JSON
         try {
             JsonNode fileNode = getYamlJsonNode(filePath, Files.readString(Paths.get(filePath)));
-            if (!config.getSchemaPathOverride()) {
+            if (!config.isSchemaPathOverride()) {
                 var schemaPathFromNode = getSchemaPathFromNode(filePath, fileNode);
                 if (schemaPathFromNode != null) {
                     schemaPath = schemaPathFromNode;
@@ -128,7 +128,7 @@ public class YamlSchemaValidator {
     private String getSchemaPathFromNode(String yamlPath, JsonNode jsonNode) {
         JsonNode yamlSchemaNode = jsonNode.get("$schema");
         if (yamlSchemaNode == null || !StringUtils.hasLength(yamlSchemaNode.asText())) {
-            throw new IllegalArgumentException("No schema found in YAML file or provided as parameter");
+           return null;
         }
 
         String detectedSchemaPath = yamlSchemaNode.asText();

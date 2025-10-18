@@ -1,0 +1,3 @@
+* xref:index.adoc[Actuator extensions]
+* xref:sanitizer.adoc[Actuator Sanitizer]
+* xref:healthhcheks.adoc[Actuator extra health checks]

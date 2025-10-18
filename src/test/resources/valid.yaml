@@ -54,10 +54,7 @@ server:
   error:
    whitelabel:
       enabled: true
-  servlet:
-    session:
-      cookie:
-      partitioned: true
+
 
 
 

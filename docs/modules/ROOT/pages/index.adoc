@@ -1,0 +1,30 @@
+= Spring Boot Actuator Extensions
+:toc: left
+:sectnums:
+
+== Introduction
+
+A collection of extensions and utilities for Spring Boot Actuator, providing enhanced monitoring and health check capabilities for your Spring Boot applications.
+
+== Modules
+
+=== spring-boot-health-checks
+
+Extension module that provides additional health check indicators for comprehensive application monitoring.
+These indicators help track various aspects of your application's health status and performance metrics.
+
+=== spring-boot-actuator-sanitizer
+
+Utility library designed to sanitize sensitive information in actuator endpoint responses.
+This module helps ensure secure exposure of monitoring data by filtering out confidential details.
+
+=== spring-boot-test-app
+
+Sample Spring Boot application that demonstrates the practical usage of the actuator extensions.
+Use this module as a reference for implementing the extensions in your own applications.
+
+== Requirements
+
+* Java 17 or higher
+* Spring Boot 3.5.3
+* Maven build tool

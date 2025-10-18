@@ -3,11 +3,11 @@
 :toclevels: 3
 :source-highlighter: prettify
 
-A Java library for validating YAML configurations against JSON schemas, built with Spring Boot.
+A Java command line utility for validating YAML/JSON files against JSON schemas, built with Spring Boot.
 
 == Features
 
-* Validates YAML files against JSON Schema definitions
+* Validates YAML and JSON files against JSON Schema definitions
 * Built on top of Spring Boot framework
 * Support for Jackson YAML/JSON parsing
 * Uses NetworkNT JSON Schema Validator
@@ -15,51 +15,54 @@ A Java library for validating YAML configurations against JSON schemas, built wi
 
 == Getting Started
 
-=== Prerequisites
+=== Building
 
-* Java 17 or higher
-* Maven 3.6+
+To build the application:
 
-=== Installation
-
-Add the following dependency to your `pom.xml`:
-
-[source,xml]
+[source,shell]
 ----
-<dependency>
-    <groupId>org.alexmond</groupId>
-    <artifactId>yaml-schema-validation</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-</dependency>
+mvn clean package
 ----
 
-== Configuration
+=== Running
 
-The library supports configuration through Spring Boot's `application.yaml` or `application.properties`.
+Run the validator using:
 
-Example configuration:
-
-[source,yaml]
+[source,shell]
 ----
-management:
-  endpoint:
-    sanitizing:
-      enabled: true
-      mask-value: "***HIDDEN***"
-      keys:
-        - password
-        - secret
-        - token
+java -jar target/yaml-schema-validator.jar --file=<yaml/json_file> --schema=<schema_file>
 ----
 
-== License
+Or validate multiple files:
 
-This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
+[source,shell]
+----
+java -jar target/yaml-schema-validator.jar file1.yaml file2.yaml --schema=schema.json
+----
 
-== Authors
+=== Usage Examples
 
-* Alex Mondshain - Initial work - [Github](https://alexmond.github.io/)
+.Validate a single YAML file
+[source,shell]
+----
+java -jar yaml-schema-validator.jar --file=config.yaml --schema=schema.json
+----
 
-== Contributing
+.Validate multiple YAML files
+[source,shell]
+----
+java -jar yaml-schema-validator.jar config1.yaml config2.yaml --schema=schema.json
+----
 
-Please read CONTRIBUTING.md for details on our code of conduct, and the process for submitting pull requests.
+=== Configuration Options
+
+[cols="1,2"]
+|===
+|Option |Description
+
+|--file
+|Path to YAML/JSON file to validate (can be specified multiple times)
+
+|--schema
+|Path to JSON Schema file for validation
+|===

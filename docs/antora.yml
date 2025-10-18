@@ -1,0 +1,6 @@
+name: yj-schema-validator
+title: YJ Schema validator
+version: true
+nav:
+- modules/ROOT/nav.adoc
+

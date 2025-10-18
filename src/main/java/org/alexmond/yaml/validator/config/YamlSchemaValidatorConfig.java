@@ -3,7 +3,6 @@ package org.alexmond.yaml.validator.config;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 
@@ -15,11 +14,6 @@ import java.time.Duration;
 @Data
 @ConfigurationProperties("validator")
 public class YamlSchemaValidatorConfig {
-    /**
-     * Path to the YAML file that needs to be validated.
-     */
-    private String file;
-
     /**
      * Path to the JSON schema in either JSON or YAML file format used for validation.
      * Can be either a local file path or URL.
@@ -36,9 +30,25 @@ public class YamlSchemaValidatorConfig {
      * Flag to override a schema path specified in the YAML / JSON file.
      * If true, uses schemaPath property instead of $schema from YAML.
      */
-    private Boolean schemaPathOverride = false;
+    private boolean schemaPathOverride = false;
 
+    /**
+     * Type of validation report to generate.
+     * Default: TEXT
+     */
     private ReportType reportType = ReportType.TEXT;
 
+    /**
+     * Flag to control whether SSL certificate validation errors should be ignored.
+     * When true, SSL certificate validation errors will be ignored during HTTP requests.
+     * Default: true
+     */
     private boolean isIgnoreSslErrors = true;
+
+    /**
+     * Flag to control whether to use colored output in the console.
+     * When true, validation results will be displayed with ANSI color codes.
+     * Default: true
+     */
+    private boolean colorOutput = true;
 }
