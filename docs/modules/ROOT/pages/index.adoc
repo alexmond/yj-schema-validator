@@ -1,6 +1,9 @@
-= Spring Boot Actuator Extensions
+= yj-schema-validator
 :toc: left
 :sectnums:
+:description: A command-line utility for validating YAML and JSON files against JSON schema definitions, built with Spring Boot
+:keywords: YAML validator, JSON validator, Schema validation, JSON Schema, Spring Boot, Java
+:author: Alexander Mondshain
 
 == YAML Schema Validator
 
