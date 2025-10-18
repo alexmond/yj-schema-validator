@@ -3,6 +3,10 @@
 :toclevels: 3
 :source-highlighter: prettify
 
+image:https://img.shields.io/maven-central/v/org.alexmond/yj-schema-validator.svg?label=Maven%20Central[Maven Central,link=https://search.maven.org/artifact/yj-schema-validator]
+image:https://img.shields.io/badge/License-Apache%202.0-blue.svg[License,link=LICENSE]
+image:https://img.shields.io/github/actions/workflow/status/alexmond/yj-schema-validator/maven.yml[Build Status,link=https://github.com/alexmond/yj-schema-validator/actions]
+
 A Java command line utility for validating YAML/JSON files against JSON schemas, built with Spring Boot.
 
 == Features
