@@ -31,5 +31,5 @@ jobs:
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: | 
+          files: |
             validation-report.json

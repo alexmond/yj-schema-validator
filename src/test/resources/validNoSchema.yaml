@@ -51,7 +51,7 @@ logging:
 
 server:
   error:
-   whitelabel:
+    whitelabel:
       enabled: true
 
 

@@ -1,4 +1,5 @@
 package org.alexmond.yaml.validator;// Java
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -21,7 +22,7 @@ public class PropertiesToJson {
     private static final Pattern TOKEN = Pattern.compile("([^.\\[]+)(\\[[0-9]+])*(?:\\.|$)");
     private static final Pattern INDEX = Pattern.compile("\\[([0-9]+)]");
 
-    public  JsonNode toJson(PropertySourcesPropertyResolver resolver, MutablePropertySources sources) {
+    public JsonNode toJson(PropertySourcesPropertyResolver resolver, MutablePropertySources sources) {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode root = mapper.createObjectNode();
         Collection<String> propertyNames = collectPropertyNames(sources);
@@ -45,7 +46,7 @@ public class PropertiesToJson {
         return names;
     }
 
-    private  void insert(ObjectNode root, String key, JsonNode value, ObjectMapper mapper) {
+    private void insert(ObjectNode root, String key, JsonNode value, ObjectMapper mapper) {
         ObjectNode currentObj = root;
         ArrayNode currentArr = null;
         String pendingLeaf = null;
@@ -156,13 +157,13 @@ public class PropertiesToJson {
         if (pendingLeaf != null) currentObj.set(pendingLeaf, value);
     }
 
-    private  void ensureArraySize(ArrayNode array, int index) {
+    private void ensureArraySize(ArrayNode array, int index) {
         while (array.size() <= index) {
             array.add(NullNode.getInstance());
         }
     }
 
-    private  ObjectNode ensureObject(ArrayNode array, int index, ObjectMapper mapper) {
+    private ObjectNode ensureObject(ArrayNode array, int index, ObjectMapper mapper) {
         // When index == -1 this method is used only to satisfy flow; return a new object
         if (index < 0) return mapper.createObjectNode();
         ensureArraySize(array, index);
@@ -175,7 +176,7 @@ public class PropertiesToJson {
         return (ObjectNode) node;
     }
 
-    private  JsonNode coerce(ObjectMapper mapper, String value) {
+    private JsonNode coerce(ObjectMapper mapper, String value) {
         if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
             return mapper.getNodeFactory().booleanNode(Boolean.parseBoolean(value));
         }
@@ -186,13 +187,15 @@ public class PropertiesToJson {
             if (value.matches("[-+]?\\d*\\.\\d+([eE][-+]?\\d+)?")) {
                 return mapper.getNodeFactory().numberNode(Double.parseDouble(value));
             }
-        } catch (NumberFormatException ignore) {}
+        } catch (NumberFormatException ignore) {
+        }
         try {
             if ((value.startsWith("{") && value.endsWith("}")) ||
-                (value.startsWith("[") && value.endsWith("]"))) {
+                    (value.startsWith("[") && value.endsWith("]"))) {
                 return mapper.readTree(value);
             }
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+        }
         return mapper.getNodeFactory().textNode(value);
     }
 }

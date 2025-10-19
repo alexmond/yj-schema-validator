@@ -1,0 +1,46 @@
+<testsuites name="SchemaValidationSuite" tests="9" failures="5" errors="0" skipped="0">
+    <testsuite name="SchemaValidationSuite" file="src/test/resources" time="0.0" tests="9" failures="5" errors="0"
+               skipped="0">
+        <testcase>
+            <testcase classname="files" name="src/test/resources/application.yaml" time="0.0">
+                <failure message="No Schema Error">No schema found in YAML file or provided as parameter</failure>
+            </testcase>
+            <testcase classname="files" name="src/test/resources/badformat.yaml" time="0.0">
+                <failure message="YAML Parse Error">
+                    com.fasterxml.jackson.dataformat.yaml.snakeyaml.error.MarkedYAMLException: while scanning a simple
+                    key
+                    in 'reader', line 30, column 5:
+                    item2:abc
+                    ^
+                    could not find expected ':'
+                    in 'reader', line 31, column 18:
+                    config-map1: abc
+                    ^
+
+                    at [Source: (StringReader); line: 29, column: 24]
+                </failure>
+            </testcase>
+            <testcase classname="files" name="src/test/resources/empty.yaml" time="0.0">
+                <failure message="No Schema Error">No schema found in YAML file or provided as parameter</failure>
+            </testcase>
+            <testcase classname="files" name="src/test/resources/invalid.yaml" time="0.0">
+                <failure message="Type Mismatch at $.sample.boolean-sample">integer found, boolean expected</failure>
+            </testcase>
+            <testcase classname="files" name="src/test/resources/remoteValid.yaml" time="0.0">
+                <failure/>
+            </testcase>
+            <testcase classname="files" name="src/test/resources/sample-schema.yaml" time="0.0">
+                <failure/>
+            </testcase>
+            <testcase classname="files" name="src/test/resources/valid.yaml" time="0.0">
+                <failure/>
+            </testcase>
+            <testcase classname="files" name="src/test/resources/validNoSchema.yaml" time="0.0">
+                <failure message="No Schema Error">No schema found in YAML file or provided as parameter</failure>
+            </testcase>
+            <testcase classname="files" name="src/test/resources/validParam.yaml" time="0.0">
+                <failure/>
+            </testcase>
+        </testcase>
+    </testsuite>
+</testsuites>

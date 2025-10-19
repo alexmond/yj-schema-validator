@@ -18,14 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
-public  class YamlLocatorByPath {
-
-    public static final class Location {
-        public final int line;     // 1-based
-        public final int column;   // 1-based
-        public Location(int line, int column) { this.line = line; this.column = column; }
-        @Override public String toString() { return "line=" + line + ", col=" + column; }
-    }
+public class YamlLocatorByPath {
 
     public Optional<Location> find(String dottedPath, Path yamlFile) throws Exception {
         try (Reader r = Files.newBufferedReader(yamlFile)) {
@@ -70,5 +63,20 @@ public  class YamlLocatorByPath {
         String path = "sample.boolean-sample";
         Optional<Location> loc = find(path, yaml);
         System.out.println(loc.map(Object::toString).orElse("Not found"));
+    }
+
+    public static final class Location {
+        public final int line;     // 1-based
+        public final int column;   // 1-based
+
+        public Location(int line, int column) {
+            this.line = line;
+            this.column = column;
+        }
+
+        @Override
+        public String toString() {
+            return "line=" + line + ", col=" + column;
+        }
     }
 }

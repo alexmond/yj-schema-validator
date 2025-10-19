@@ -63,6 +63,12 @@ jobs:
       - name: Push Changes
         run: git push && git push --tags
 
+      - name: Build Release JAR
+        run: |
+          mvn clean package -DskipTests
+          echo "Built JAR at:"
+          ls -l target/yj-schema-validator.jar
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
@@ -70,6 +76,8 @@ jobs:
           name: Release ${{ github.event.inputs.releaseVersion }}
           generate_release_notes: true
           files: |
-            target/yj-schema-validator-${{ github.event.inputs.releaseVersion }}.jar
+            target/yj-schema-validator.jar
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,7 +1,23 @@
 package org.alexmond.yaml.validator.config;
 
+/**
+ * Represents different types of output report formats for validation results.
+ */
 public enum ReportType {
+    /**
+     * Plain text format report
+     */
     TEXT,
+    /**
+     * YAML format report
+     */
     YAML,
-    JSON
+    /**
+     * JSON format report
+     */
+    JSON,
+    /**
+     * JUnit XML format report
+     */
+    JUNIT
 }

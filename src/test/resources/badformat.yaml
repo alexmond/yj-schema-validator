@@ -28,8 +28,8 @@ sample:
       config-map1: abc
       config-map2: 1000
     item2:abc
-      config-map1: abc
-      config-map2: 1001
+    config-map1: abc
+    config-map2: 1001
 
 
 

@@ -1,20 +1,17 @@
 package org.alexmond.yaml.validator;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.PropertySourcesPropertyResolver;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
-import java.util.*;
+import java.util.List;
 
 @Slf4j
 public class YamlProprtySourceLoaderTest {
@@ -43,7 +40,7 @@ public class YamlProprtySourceLoaderTest {
 
         JsonNode node;
         PropertiesToJson propertiesToJson = new PropertiesToJson();
-        node = propertiesToJson.toJson(resolver,mutableSources);
+        node = propertiesToJson.toJson(resolver, mutableSources);
         log.info("node: {}", node.toString());
     }
 

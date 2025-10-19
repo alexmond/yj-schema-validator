@@ -12,37 +12,52 @@ import org.alexmond.yaml.validator.config.YamlSchemaValidatorConfig;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import javax.net.ssl.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A validator for YAML files against JSON Schema definitions.
+ * This component provides functionality to validate YAML/JSON content against JSON Schema specifications,
+ * supporting both local file system and HTTP(S) schema sources.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class YamlSchemaValidator {
+    private static final int HTTP_SUCCESS_STATUS = 200;
     private final YamlSchemaValidatorConfig config;
-    Map<String, JsonSchema> schemaCache = new HashMap<>();
-
     private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
     private final ObjectMapper jsonMapper = new ObjectMapper();
+    Map<String, JsonSchema> schemaCache = new HashMap<>();
 
+    /**
+     * Validates a YAML file against a JSON Schema.
+     *
+     * @param filePath   Path to the YAML file to validate
+     * @param schemaPath Path to the JSON Schema file (can be local file path or HTTP URL)
+     * @return Map containing validation results where key is the file path and value is the validation output
+     */
     public Map<String, OutputUnit> validate(String filePath, String schemaPath) {
         // Step 1: Parse YAML to JSON
         try {
             JsonNode fileNode = getYamlJsonNode(filePath, Files.readString(Paths.get(filePath)));
-            if (!config.isSchemaPathOverride()) {
+            if (!config.isSchemaOverride()) {
                 var schemaPathFromNode = getSchemaPathFromNode(filePath, fileNode);
                 if (schemaPathFromNode != null) {
                     schemaPath = schemaPathFromNode;
@@ -63,7 +78,8 @@ public class YamlSchemaValidator {
         } catch (IOException e) { // <---------- from Files.readString, line 44
             log.debug("Error reading file", e); // TODO: fix debug messaging
             return genericError(filePath, e.toString());
-        } catch (IllegalArgumentException | YamlValidationException e) { // TODO: check what it is and where it is coming from and if it is appropriate
+        } catch (IllegalArgumentException |
+                 YamlValidationException e) { // TODO: check what it is and where it is coming from and if it is appropriate
             // IllegalArgumentException - from getSchemaPathFromNode
             // YamlValidationException - from getYamlJsonNode, getSchemaByPath
             log.debug("{}", filePath, e);
@@ -74,6 +90,14 @@ public class YamlSchemaValidator {
         }
     }
 
+    /**
+     * Retrieves or creates a JsonSchema instance for the given schema path.
+     * Uses cached schema if available, otherwise loads and caches the new schema.
+     *
+     * @param schemaPath Path to the schema file
+     * @return JsonSchema instance for validation
+     * @throws YamlValidationException if schema cannot be loaded or parsed
+     */
     private JsonSchema getSchemaByPath(String schemaPath) {
         if (schemaCache.containsKey(schemaPath)) {
             return schemaCache.get(schemaPath);
@@ -92,6 +116,13 @@ public class YamlSchemaValidator {
         return schema;
     }
 
+    /**
+     * Creates a generic error output for validation failures.
+     *
+     * @param filePath Path to the file being validated
+     * @param message  Error message to include in the output
+     * @return Map containing the error output
+     */
     private Map<String, OutputUnit> genericError(String filePath, String message) {
         OutputUnit outputUnit = new OutputUnit();
         outputUnit.setValid(false);
@@ -99,6 +130,13 @@ public class YamlSchemaValidator {
         return Map.of(filePath, outputUnit);
     }
 
+    /**
+     * Detects the JSON Schema version from the schema node.
+     * Falls back to V202012 if version cannot be detected.
+     *
+     * @param schemaNode JSON node containing the schema
+     * @return Detected schema version or default version if detection fails
+     */
     public SpecVersion.VersionFlag getSchemaVersion(JsonNode schemaNode) {
         SpecVersion.VersionFlag defaultVersion = SpecVersion.VersionFlag.V202012;
         try {
@@ -109,7 +147,16 @@ public class YamlSchemaValidator {
         }
     }
 
-    private JsonNode getYamlJsonNode(String filePath, String content){
+    /**
+     * Parses content as either JSON or YAML into a JsonNode.
+     * Attempts JSON parsing first, falls back to YAML if JSON parsing fails.
+     *
+     * @param filePath Path to the file being parsed (used for error reporting)
+     * @param content  String content to parse
+     * @return Parsed JsonNode
+     * @throws YamlValidationException if content cannot be parsed as either JSON or YAML
+     */
+    private JsonNode getYamlJsonNode(String filePath, String content) {
         JsonNode schemaNode;
         try {
             return jsonMapper.readTree(content);
@@ -125,10 +172,18 @@ public class YamlSchemaValidator {
         return schemaNode;
     }
 
+    /**
+     * Extracts schema path from the $schema field in the YAML/JSON content.
+     * Resolves relative paths against the YAML file location.
+     *
+     * @param yamlPath Path to the YAML file being validated
+     * @param jsonNode Parsed content of the YAML file
+     * @return Resolved schema path or null if no schema specified
+     */
     private String getSchemaPathFromNode(String yamlPath, JsonNode jsonNode) {
         JsonNode yamlSchemaNode = jsonNode.get("$schema");
         if (yamlSchemaNode == null || !StringUtils.hasLength(yamlSchemaNode.asText())) {
-           return null;
+            return null;
         }
 
         String detectedSchemaPath = yamlSchemaNode.asText();
@@ -139,6 +194,13 @@ public class YamlSchemaValidator {
         return detectedSchemaPath;
     }
 
+    /**
+     * Retrieves schema content from either a local file or HTTP URL.
+     *
+     * @param schemaPath Path or URL to the schema
+     * @return Schema content as string
+     * @throws YamlValidationException if schema cannot be retrieved
+     */
     private String getSchema(String schemaPath) {
         if (isHttpUrl(schemaPath)) {
             return fetchSchemaFromUrl(schemaPath);
@@ -151,8 +213,14 @@ public class YamlSchemaValidator {
         return schemaPath.startsWith("http://") || schemaPath.startsWith("https://");
     }
 
-    private static final int HTTP_SUCCESS_STATUS = 200;
-
+    /**
+     * Fetches schema content from a HTTP(S) URL.
+     * Supports SSL certificate validation bypass if configured.
+     *
+     * @param schemaPath URL to fetch the schema from
+     * @return Schema content as string
+     * @throws YamlValidationException if schema cannot be fetched
+     */
     private String fetchSchemaFromUrl(String schemaPath) {
         try {
             HttpClient httpClient = createHttpClient();
@@ -212,6 +280,13 @@ public class YamlSchemaValidator {
                 .build();
     }
 
+    /**
+     * Reads schema content from a local file.
+     *
+     * @param schemaPath Path to the schema file
+     * @return Schema content as string
+     * @throws YamlValidationException if file cannot be read
+     */
     private String readSchemaFromFile(String schemaPath) {
         try {
             return Files.readString(Paths.get(schemaPath));

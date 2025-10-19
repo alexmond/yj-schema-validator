@@ -1,0 +1,293 @@
+diff --git a/src/main/java/org/alexmond/yaml/validator/output/FilesOutput.java b/src/main/java/org/alexmond/yaml/validator/output/FilesOutput.java
+index 0000000..abcdef1 100644
+--- a/src/main/java/org/alexmond/yaml/validator/output/FilesOutput.java
++++ b/src/main/java/org/alexmond/yaml/validator/output/FilesOutput.java
+@@ -1,5 +1,6 @@
+ package org.alexmond.yaml.validator.output;
+
++import lombok.Builder;
+ import com.fasterxml.jackson.annotation.*;
+ import com.fasterxml.jackson.databind.ObjectMapper;
+ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+@@ -8,6 +9,12 @@
+ import lombok.Builder;
+ import lombok.Data;
+
++import javax.xml.bind.JAXBContext;
++import javax.xml.bind.JAXBException;
++import javax.xml.bind.Marshaller;
++import java.io.StringWriter;
++import java.util.ArrayList;
++import java.util.List;
+ import java.util.Map;
+
+ /**
+@@ -16,7 +23,7 @@
+  */
+ @Data
+ @JsonInclude(JsonInclude.Include.NON_NULL)
+-@JsonRootName("")
++@JsonRootName("")
+ @JsonPropertyOrder({"valid", "files"})
+ @JsonIgnoreProperties(ignoreUnknown = true)
+ public class FilesOutput {
+@@ -30,6 +37,7 @@ public class FilesOutput {
+     private boolean valid;
+     private Map<String, OutputUnit> files;
+
++    // Existing toColoredString, toJsonString, toYamlString methods unchanged...
+     public String toColoredString(boolean color) {
+         String ansiGreen;
+         String ansiRed;
+@@ -91,6 +99,115 @@ public class FilesOutput {
+         }
+     }
+
++    /**
++     * Converts this FilesOutput to JUnit XML format.
++     *
++     * @return JUnit XML string
++     */
++    public String toJunitString() {
++        int totalTests = files.size();
++        long failureCount = files.values().stream().filter(unit -> !unit.isValid()).count();
++
++        Testsuites testsuites = Testsuites.builder()
++                .name("SchemaValidationSuite")
++                .tests(totalTests)
++                .failures((int) failureCount)
++                .testsuite(buildTestsuite())
++                .build();
++
++        try {
++            JAXBContext jaxbContext = JAXBContext.newInstance(Testsuites.class);
++            Marshaller marshaller = jaxbContext.createMarshaller();
++            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
++
++            StringWriter stringWriter = new StringWriter();
++            marshaller.marshal(testsuites, stringWriter);
++            return stringWriter.toString();
++        } catch (JAXBException e) {
++            throw new RuntimeException("Error converting to JUnit XML", e);
++        }
++    }
++
++    private Testsuite buildTestsuite() {
++        Testsuite testsuite = Testsuite.builder()
++                .name("SchemaValidationSuite")
++                .tests(files.size())
++                .failures((int) files.values().stream().filter(unit -> !unit.isValid()).count())
++                .testcases(new java.util.ArrayList<>())
++                .build();
++
++        java.util.List<Testcase> testcases = new java.util.ArrayList<>();
++        for (Map.Entry<String, OutputUnit> entry : files.entrySet()) {
++            String filename = entry.getKey();
++            OutputUnit unit = entry.getValue();
++
++            Testcase testcase = Testcase.builder()
++                    .classname("files")
++                    .name(filename)
++                    .time(0.0)
++                    .build();
++
++            if (!unit.isValid()) {
++                String fullError = extractFullErrorMessage(unit);
++                String message = extractFailureMessage(unit, fullError);
++
++                Failure failure = Failure.builder()
++                        .message(message)
++                        .value(fullError)
++                        .build();
++
++                testcase.setFailure(failure);
++            }
++
++            testcases.add(testcase);
++        }
++
++        testsuite.setTestcases(testcases);
++        return testsuite;
++    }
++
++    private String extractFullErrorMessage(OutputUnit unit) {
++        StringBuilder sb = new StringBuilder();
++        if (unit.getErrors() != null && !unit.getErrors().isEmpty()) {
++            unit.getErrors().forEach((key, value) -> {
++                if ("error".equals(key)) {
++                    sb.append(value);
++                }
++            });
++        }
++        if (unit.getDetails() != null && !unit.getDetails().isEmpty()) {
++            for (OutputUnit detail : unit.getDetails()) {  // Assuming details is List<OutputUnit> or similar; adjust if needed
++                if (detail.getErrors() != null && !detail.getErrors().isEmpty()) {
++                    detail.getErrors().forEach((key, value) -> {
++                        sb.append(value).append("\n");
++                    });
++                }
++            }
++        }
++        return sb.toString().trim();
++    }
++
++    private String extractFailureMessage(OutputUnit unit, String fullError) {
++        if (unit.getErrors() != null && unit.getErrors().containsKey("error")) {
++            String errorMsg = unit.getErrors().get("error");
++            if (errorMsg.startsWith("No schema")) {
++                return "No Schema Error";
++            } else if (errorMsg.contains("MarkedYAMLException") || errorMsg.contains("YAMLException")) {
++                return "YAML Parse Error";
++            }
++            return "Validation Error";
++        } else if (unit.getDetails() != null && !unit.getDetails().isEmpty()) {
++            OutputUnit firstDetail = unit.getDetails().get(0);
++            if (firstDetail.getInstanceLocation() != null && firstDetail.getErrors() != null) {
++                return "Type Mismatch at " + firstDetail.getInstanceLocation();
++            }
++        }
++        return "Validation Failure";
++    }
+ }
+diff --git a/src/main/java/org/alexmond/yaml/validator/output/Testsuites.java b/src/main/java/org/alexmond/yaml/validator/output/Testsuites.java
+new file mode 100644
+index 0000000..abcdef2
+--- /dev/null
++++ b/src/main/java/org/alexmond/yaml/validator/output/Testsuites.java
+@@ -0,0 +1,28 @@
++package org.alexmond.yaml.validator.output;
++
++import lombok.Builder;
++import lombok.Data;
++
++import javax.xml.bind.annotation.*;
++
++/**
++ * JUnit XML model for Testsuites.
++ */
++@XmlRootElement(name = "testsuites")
++@XmlAccessorType(XmlAccessType.FIELD)
++@Data
++@Builder
++public class Testsuites {
++    @XmlAttribute
++    private String name = "SchemaValidationSuite";
++
++    @XmlAttribute
++    private int tests;
++
++    @XmlAttribute
++    private int failures;
++
++    @XmlAttribute
++    private int errors = 0;
++
++    @XmlAttribute
++    private int skipped = 0;
++
++    @XmlElement(name = "testsuite")
++    private Testsuite testsuite;
++}
+diff --git a/src/main/java/org/alexmond/yaml/validator/output/Testsuite.java b/src/main/java/org/alexmond/yaml/validator/output/Testsuite.java
+new file mode 100644
+index 0000000..abcdef3
+--- /dev/null
++++ b/src/main/java/org/alexmond/yaml/validator/output/Testsuite.java
+@@ -0,0 +1,32 @@
++package org.alexmond.yaml.validator.output;
++
++import lombok.Builder;
++import lombok.Data;
++
++import javax.xml.bind.annotation.*;
++import java.util.List;
++
++/**
++ * JUnit XML model for Testsuite.
++ */
++@XmlAccessorType(XmlAccessType.FIELD)
++@Data
++@Builder
++public class Testsuite {
++    @XmlAttribute
++    private String name = "SchemaValidationSuite";
++
++    @XmlAttribute
++    private String file = "src/test/resources";
++
++    @XmlAttribute
++    private double time = 0.0;
++
++    @XmlAttribute
++    private int tests;
++
++    @XmlAttribute
++    private int failures;
++
++    @XmlAttribute
++    private int errors = 0;
++
++    @XmlAttribute
++    private int skipped = 0;
++
++    @XmlElement(name = "testcase")
++    private List<Testcase> testcases = new java.util.ArrayList<>();
++}
+diff --git a/src/main/java/org/alexmond/yaml/validator/output/Testcase.java b/src/main/java/org/alexmond/yaml/validator/output/Testcase.java
+new file mode 100644
+index 0000000..abcdef4
+--- /dev/null
++++ b/src/main/java/org/alexmond/yaml/validator/output/Testcase.java
+@@ -0,0 +1,24 @@
++package org.alexmond.yaml.validator.output;
++
++import lombok.Builder;
++import lombok.Data;
++
++import javax.xml.bind.annotation.*;
++
++/**
++ * JUnit XML model for Testcase.
++ */
++@XmlAccessorType(XmlAccessType.FIELD)
++@Data
++@Builder
++public class Testcase {
++    @XmlAttribute
++    private String classname = "files";
++
++    @XmlAttribute
++    private String name;
++
++    @XmlAttribute
++    private double time = 0.0;
++
++    @XmlElement(name = "failure")
++    private Failure failure;
++}
+diff --git a/src/main/java/org/alexmond/yaml/validator/output/Failure.java b/src/main/java/org/alexmond/yaml/validator/output/Failure.java
+new file mode 100644
+index 0000000..abcdef5
+--- /dev/null
++++ b/src/main/java/org/alexmond/yaml/validator/output/Failure.java
+@@ -0,0 +1,20 @@
++package org.alexmond.yaml.validator.output;
++
++import lombok.Builder;
++import lombok.Data;
++
++import javax.xml.bind.annotation.*;
++
++/**
++ * JUnit XML model for Failure.
++ */
++@XmlAccessorType(XmlAccessType.FIELD)
++@Data
++@Builder
++public class Failure {
++    @XmlAttribute
++    private String message;
++
++    @XmlValue
++    private String value;
++}

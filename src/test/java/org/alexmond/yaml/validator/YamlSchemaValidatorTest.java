@@ -33,8 +33,8 @@ public class YamlSchemaValidatorTest {
             "src/test/resources/remoteValid.yaml,"
     })
     void shouldValidateYamlSuccessfully(String yamlPath, String schemaPath) {
-        Map<String,OutputUnit> outputUnitMap;
-        outputUnitMap =  yamlSchemaValidator.validate(yamlPath, schemaPath);
+        Map<String, OutputUnit> outputUnitMap;
+        outputUnitMap = yamlSchemaValidator.validate(yamlPath, schemaPath);
         outputUnitMap.values().stream().findFirst().ifPresent(outputUnit -> assertTrue(outputUnit::isValid, "YAML validation failed: " + outputUnit));
     }
 
@@ -52,7 +52,7 @@ public class YamlSchemaValidatorTest {
         OutputUnit outputUnit = outputUnitMap.values().iterator().next();
         assertFalse(outputUnit.isValid());
         log.error("Yaml validation error: {}", outputUnit.getErrors());
-        assertTrue(outputUnitMap.containsKey(yamlPath) && ((String)outputUnit.getErrors().get("error")).contains(error));
+        assertTrue(outputUnitMap.containsKey(yamlPath) && ((String) outputUnit.getErrors().get("error")).contains(error));
     }
 
     @ParameterizedTest

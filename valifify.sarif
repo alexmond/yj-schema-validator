@@ -19,7 +19,10 @@
                 "level": "error"
               },
               "properties": {
-                "tags": ["validation", "schema-missing"]
+                "tags": [
+                  "validation",
+                  "schema-missing"
+                ]
               }
             },
             {
@@ -32,7 +35,10 @@
                 "level": "error"
               },
               "properties": {
-                "tags": ["syntax", "parse-error"]
+                "tags": [
+                  "syntax",
+                  "parse-error"
+                ]
               }
             },
             {
@@ -45,7 +51,10 @@
                 "level": "error"
               },
               "properties": {
-                "tags": ["data-validation", "type-error"]
+                "tags": [
+                  "data-validation",
+                  "type-error"
+                ]
               }
             }
           ]
@@ -201,7 +210,9 @@
           "level": "error",
           "message": {
             "text": "integer found, boolean expected at {0}",
-            "arguments": ["$.sample.boolean-sample"]
+            "arguments": [
+              "$.sample.boolean-sample"
+            ]
           },
           "locations": [
             {
