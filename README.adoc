@@ -7,7 +7,9 @@ image:https://img.shields.io/maven-central/v/org.alexmond/yj-schema-validator.sv
 image:https://img.shields.io/badge/License-Apache%202.0-blue.svg[License,link=LICENSE]
 image:https://img.shields.io/github/actions/workflow/status/alexmond/yj-schema-validator/maven.yml[Build Status,link=https://github.com/alexmond/yj-schema-validator/actions]
 
-A Java command line utility for validating YAML/JSON files against JSON schemas, built with Spring Boot.
+A Java command line utility for validating YAML/JSON files against JSON schemas
+
+https://alexmond.github.io/yj-schema-validator/current/index.html[Full documentation]
 
 == Features
 
@@ -19,29 +21,20 @@ A Java command line utility for validating YAML/JSON files against JSON schemas,
 
 == Getting Started
 
-=== Building
-
-To build the application:
-
+=== Download jar from
+https://repo1.maven.org/maven2/org/alexmond/yj-schema-validator/0.0.2/yj-schema-validator-0.0.2.jar
 [source,shell]
 ----
-mvn clean package
+curl -L -o yj-schema-validator.jar https://repo1.maven.org/maven2/org/alexmond/yj-schema-validator/0.0.2/yj-schema-validator-0.0.2.jar
 ----
-
 === Running
 
-Run the validator using:
+
+Validate files:
 
 [source,shell]
 ----
-java -jar target/yj-schema-validator.jar --file=<yaml/json_file> --schema=<schema_file>
-----
-
-Or validate multiple files:
-
-[source,shell]
-----
-java -jar target/yj-schema-validator.jar file1.yaml file2.yaml --schema=schema.json
+java -jar yj-schema-validator.jar file1.yaml file2.yaml --schema=<schema_file or url>
 ----
 
 === Usage Examples
@@ -49,7 +42,7 @@ java -jar target/yj-schema-validator.jar file1.yaml file2.yaml --schema=schema.j
 .Validate a single YAML file
 [source,shell]
 ----
-java -jar yj-schema-validator.jar --file=config.yaml --schema=schema.json
+java -jar yj-schema-validator.jar config.yaml
 ----
 
 .Validate multiple YAML files
@@ -59,14 +52,44 @@ java -jar yj-schema-validator.jar config1.yaml config2.yaml --schema=schema.json
 ----
 
 === Configuration Options
-
-[cols="1,2"]
+[cols="2,6,2"]
 |===
-|Option |Description
+|Option |Description |Default
 
-|--file
-|Path to YAML/JSON file to validate (can be specified multiple times)
+|help
+| prints out help
+|
 
-|--schema
-|Path to JSON Schema file for validation
+|color
+|Flag to control whether to use colored output in the console. When true, validation results will be displayed with ANSI color codes.
+|true
+
+|files
+|Array of file paths to validate against the schema. Can contain both YAML and JSON files.
+|
+
+|http-timeout
+|HTTP timeout in seconds for fetching remote schemas.
+|10s
+
+|ignore-ssl-errors
+| ignore ssl errors when fetching schema
+|
+
+|report-file-name
+|Name of the file to write the validation report to. Only used when reportType is not TEXT.
+|
+
+|report-type
+|Type of validation report to generate., Report types can be json,yaml,junit(alpha)
+|text
+
+|schema
+|Path to the JSON schema in either JSON or YAML file format used for validation. Can be either a local file path or URL.
+|
+
+|schema-override
+|Flag to override a schema path specified in the YAML / JSON file. If true, uses schema property instead of $schema from YAML.
+|false
 |===
+

@@ -100,9 +100,14 @@ public class YamlSchemaValidatorRunner implements ApplicationRunner {
                 Usage: java -jar yaml-schema-validator.jar [options] <file1> <file2> ...
                 
                 Options:
-                  --schema=<path>          Path to the JSON schema file (required unless schemaPathOverride is false)
-                  --schemaPathOverride     If set, the schema path must be provided via --schema option
-                  --help                   Show this help message
+                  --help                     Show this help message
+                  --schema=<path>            Path to the JSON schema file (required unless schema-override is false)
+                  --schema-override          If set, uses --schema instead of $schema from YAML/JSON
+                  --report-type=<type>       Output format: text (default), json, yaml, junit
+                  --report-file-name=<name>  Write report to the given file (prints to stdout if not set)
+                  --http-timeout=<dur>       HTTP timeout for fetching remote schemas (e.g., 10s, 2m). Default: 10s
+                  --ignore-ssl-errors        Ignore SSL certificate validation errors when fetching schemas
+                  --color                    Use ANSI colors in text output (default: enabled)
                 """;
         System.out.println(helpText);
         System.exit(0);
