@@ -38,7 +38,7 @@ jobs:
 
       - name: Prepare Release
         run: |
-          mvn versions:set -DnewVersion=${{ github.event.inputs.releaseVersion }} -Pdefault --no-transfer-progress
+          mvn versions:set -DnewVersion=${{ github.event.inputs.releaseVersion }} --no-transfer-progress
           git commit -am "Prepare release ${{ github.event.inputs.releaseVersion }}"
           git tag -a ${{ github.event.inputs.releaseVersion }} -m "Release ${{ github.event.inputs.releaseVersion }}"
 
@@ -57,17 +57,11 @@ jobs:
 
       - name: Prepare for Next Development Version
         run: |
-          mvn versions:set -DnewVersion=${{ github.event.inputs.nextVersion }} -Pdefault --no-transfer-progress
+          mvn versions:set -DnewVersion=${{ github.event.inputs.nextVersion }} --no-transfer-progress
           git commit -am "Prepare for next development iteration: ${{ github.event.inputs.nextVersion }}"
 
       - name: Push Changes
         run: git push && git push --tags
-
-      - name: Build Release JAR
-        run: |
-          mvn clean package -DskipTests
-          echo "Built JAR at:"
-          ls -l target/yj-schema-validator.jar
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -75,9 +69,5 @@ jobs:
           tag_name: ${{ github.event.inputs.releaseVersion }}
           name: Release ${{ github.event.inputs.releaseVersion }}
           generate_release_notes: true
-          files: |
-            target/yj-schema-validator.jar
-          draft: false
-          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
