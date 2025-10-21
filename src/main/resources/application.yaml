@@ -1,3 +1,6 @@
 logging:
   level:
-    root: warn
+    root: error
+#spring:
+#  application:
+#    version: ${build.version}

@@ -9,6 +9,9 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.networknt.schema.output.OutputUnit;
 import lombok.Data;
 
+import org.springframework.boot.ansi.AnsiColor;
+import org.springframework.boot.ansi.AnsiOutput;
+
 import java.util.Map;
 
 /**
@@ -52,51 +55,53 @@ public class FilesOutput {
      * @param color true to enable ANSI color output, false for plain text
      * @return formatted string representation of the validation results
      */
+
     public String toColoredString(boolean color) {
-        String ansiGreen;
-        String ansiRed;
-        String ansiReset;
+        AnsiOutput.Enabled previous = AnsiOutput.getEnabled();
+        AnsiOutput.setEnabled(color ? AnsiOutput.Enabled.ALWAYS : AnsiOutput.Enabled.NEVER);
+        try {
+            StringBuilder result = new StringBuilder();
+            result.append("Validation Result: ");
+            if (valid) {
+                result.append(AnsiOutput.toString(AnsiColor.GREEN, "ok", AnsiColor.DEFAULT));
+            } else {
+                result.append(AnsiOutput.toString(AnsiColor.RED, "invalid", AnsiColor.DEFAULT));
+            }
+            result.append("\n");
 
-        if (!color) {
-            ansiGreen = "";
-            ansiRed = "";
-            ansiReset = "";
-        } else {
-            ansiReset = "\u001B[0m";
-            ansiRed = "\u001B[31m";
-            ansiGreen = "\u001B[32m";
+            files.forEach((filename, output) -> {
+                result.append(filename).append(": ");
+                if (output.isValid()) {
+                    result.append(AnsiOutput.toString(AnsiColor.GREEN, "ok", AnsiColor.DEFAULT));
+                } else {
+                    result.append(AnsiOutput.toString(AnsiColor.RED, "invalid", AnsiColor.DEFAULT));
+                }
+                result.append("\n");
+
+                if (!output.isValid() && output.getErrors() != null) {
+                    output.getErrors().forEach((label, message) -> {
+                        result.append(" " + label + ": ").append(message).append("\n");
+                    });
+                }
+
+                if (!output.isValid() && output.getDetails() != null) {
+                    output.getDetails().forEach(detail -> {
+                        result.append(" Details:\n");
+                        result.append(" Path: ").append(detail.getInstanceLocation()).append("\n");
+                        result.append(" Schema: ").append(detail.getSchemaLocation()).append("\n");
+                        if (detail.getErrors() != null) {
+                            detail.getErrors().forEach((label, message) -> {
+                                result.append(" ").append(label).append(": ").append(message).append("\n");
+                            });
+                        }
+                    });
+                }
+            });
+
+            return result.toString();
+        } finally {
+            AnsiOutput.setEnabled(previous);
         }
-
-        StringBuilder result = new StringBuilder();
-        result.append("Validation Result: ");
-        result.append(valid ?
-                ansiGreen + "ok" :
-                ansiRed + "invalid").append(ansiReset).append("\n");
-
-        files.forEach((filename, output) -> {
-            result.append(filename).append(": ");
-            result.append(output.isValid() ?
-                    ansiGreen + "ok" :
-                    ansiRed + "invalid").append(ansiReset).append("\n");
-            if (!output.isValid() && output.getErrors() != null) {
-                output.getErrors().forEach((label, message) -> {
-                    result.append("  " + label + ": ").append(message).append("\n");
-                });
-            }
-            if (!output.isValid() && output.getDetails() != null) {
-                output.getDetails().forEach(detail -> {
-                    result.append("  Details:\n");
-                    result.append("    Path: ").append(detail.getInstanceLocation()).append("\n");
-                    result.append("    Schema: ").append(detail.getSchemaLocation()).append("\n");
-                    if (detail.getErrors() != null) {
-                        detail.getErrors().forEach((label, message) -> {
-                            result.append("    ").append(label).append(": ").append(message).append("\n");
-                        });
-                    }
-                });
-            }
-        });
-        return result.toString();
     }
 
     /**
