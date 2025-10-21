@@ -97,6 +97,10 @@ Exit code: 1 (fail CI jobs).
 
 |===
 |Flag |Description |Default |Example
+|`--help`
+|Show usage help
+|N/A
+|`--help`
 
 |`--files`
 |Path to input YAML/JSON file(s) (positional args also supported)
@@ -138,15 +142,6 @@ Exit code: 1 (fail CI jobs).
 |`false`
 |`--ignore-embedded-schema`
 
-|`--help`
-|Show usage help
-|N/A
-|`--help`
-
-|`--version`
-|Print version info
-|N/A
-|`--version`
 |===
 
 == Troubleshooting
