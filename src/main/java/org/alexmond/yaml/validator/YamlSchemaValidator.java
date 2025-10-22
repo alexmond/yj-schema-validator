@@ -28,8 +28,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A validator for YAML files against JSON Schema definitions.
@@ -54,39 +53,58 @@ public class YamlSchemaValidator {
      * @return Map containing validation results where key is the file path and value is the validation output
      */
     public Map<String, OutputUnit> validate(String filePath, String schemaPath) {
-        // Step 1: Parse YAML to JSON
+
+        List<JsonNode> fileNodeList;
         try {
-            JsonNode fileNode = getYamlJsonNode(filePath, Files.readString(Paths.get(filePath)));
+            fileNodeList = getYamlJsonNode(filePath, Files.readString(Paths.get(filePath)));
+        } catch (YamlValidationException | IOException e) { // <---------- from Files.readString, line 44
+            log.debug("Error reading file", e); // TODO: fix debug messaging
+            return Map.of(filePath, genericError(e.toString()));
+        }
+        return switch (fileNodeList.size()) {
+            case 0 -> Map.of(filePath, genericError("No Nodes found in YAML file"));
+            case 1 -> Map.of(filePath, validateJsonNode(filePath, schemaPath, fileNodeList.get(0)));
+            default -> validateMultipleJsonNodes(filePath, schemaPath, fileNodeList);
+        };
+    }
+
+    private Map<String, OutputUnit> validateMultipleJsonNodes(String filePath, String schemaPath, List<JsonNode> fileNodeList) {
+        Map<String, OutputUnit> outputUnitMap = new HashMap<>();
+        int fileIndex = 0;
+        for (JsonNode fileNode : fileNodeList) {
+            fileIndex++;
+            outputUnitMap.put(filePath + "-" + fileIndex, validateJsonNode(filePath, schemaPath, fileNode));
+        }
+        return outputUnitMap;
+    }
+
+    private OutputUnit validateJsonNode(String filePath, String schemaPath, JsonNode fileNode) {
+        try {
             if (!config.isSchemaOverride()) {
                 var schemaPathFromNode = getSchemaPathFromNode(filePath, fileNode);
                 if (schemaPathFromNode != null) {
                     schemaPath = schemaPathFromNode;
                 }
-                if (schemaPath == null) {
-                    return genericError(filePath, "No schema found in YAML file or provided as parameter");
-                }
             }
-            JsonSchema schema = getSchemaByPath(schemaPath);
-
-            OutputUnit outputUnit = schema.validate(fileNode.toString(), InputFormat.JSON, OutputFormat.LIST, executionConfiguration -> {
-                executionConfiguration.getExecutionConfig().setAnnotationCollectionFilter(keyword -> true);
-                executionConfiguration.getExecutionConfig().setFormatAssertionsEnabled(true);
-            });
-
-            log.debug("Validation successful: YAML conforms to the JSON Schema: {}", schemaPath);
-            return Map.of(filePath, outputUnit);
-        } catch (IOException e) { // <---------- from Files.readString, line 44
-            log.debug("Error reading file", e); // TODO: fix debug messaging
-            return genericError(filePath, e.toString());
+            if (schemaPath == null) {
+                return genericError("No schema found in YAML file or provided as parameter");
+            } else {
+                JsonSchema schema = getSchemaByPath(schemaPath);
+                return schema.validate(fileNode.toString(), InputFormat.JSON, OutputFormat.LIST,
+                        executionConfiguration -> {
+                            executionConfiguration.getExecutionConfig().setAnnotationCollectionFilter(keyword -> true);
+                            executionConfiguration.getExecutionConfig().setFormatAssertionsEnabled(true);
+                        });
+            }
         } catch (IllegalArgumentException |
                  YamlValidationException e) { // TODO: check what it is and where it is coming from and if it is appropriate
             // IllegalArgumentException - from getSchemaPathFromNode
             // YamlValidationException - from getYamlJsonNode, getSchemaByPath
             log.debug("{}", filePath, e);
-            return genericError(filePath, e.getMessage());
+            return genericError(e.getMessage());
         } catch (Exception e) {
             log.debug("Unexpected Exception", e);
-            return genericError(filePath, e.getMessage());
+            return genericError(e.getMessage());
         }
     }
 
@@ -104,7 +122,7 @@ public class YamlSchemaValidator {
         }
         String schemaString = getSchema(schemaPath);
         // Step 2: Load JSON/YAML Schema
-        JsonNode schemaNode = getYamlJsonNode(schemaPath, schemaString);
+        JsonNode schemaNode = getSchemaYamlJsonNode(schemaPath, schemaString);
 
 //         Step 3: Determine schema version from $schema
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(getSchemaVersion(schemaNode));
@@ -119,15 +137,14 @@ public class YamlSchemaValidator {
     /**
      * Creates a generic error output for validation failures.
      *
-     * @param filePath Path to the file being validated
-     * @param message  Error message to include in the output
+     * @param message Error message to include in the output
      * @return Map containing the error output
      */
-    private Map<String, OutputUnit> genericError(String filePath, String message) {
+    private OutputUnit genericError(String message) {
         OutputUnit outputUnit = new OutputUnit();
         outputUnit.setValid(false);
         outputUnit.setErrors(Map.of("error", message));
-        return Map.of(filePath, outputUnit);
+        return outputUnit;
     }
 
     /**
@@ -156,20 +173,48 @@ public class YamlSchemaValidator {
      * @return Parsed JsonNode
      * @throws YamlValidationException if content cannot be parsed as either JSON or YAML
      */
-    private JsonNode getYamlJsonNode(String filePath, String content) {
-        JsonNode schemaNode;
+    private JsonNode getSchemaYamlJsonNode(String filePath, String content) {
+        JsonNode jsonNode;
         try {
             return jsonMapper.readTree(content);
         } catch (JsonProcessingException e) {
             log.debug("Error parsing schema as JSON, trying YAML: {}, {}", filePath, e.getMessage());
             try {
-                schemaNode = yamlMapper.readTree(content);
+                jsonNode = yamlMapper.readTree(content);
             } catch (JsonProcessingException ex) {
                 log.debug("Error parsing schema as YAML: {}, {}", filePath, ex.getMessage());
                 throw new YamlValidationException(ex, null, filePath);
             }
         }
-        return schemaNode;
+        return jsonNode;
+    }
+
+    /**
+     * Parses content as either JSON or YAML into a JsonNode.
+     * Attempts JSON parsing first, falls back to YAML if JSON parsing fails.
+     *
+     * @param filePath Path to the file being parsed (used for error reporting)
+     * @param content  String content to parse
+     * @return Parsed JsonNode
+     * @throws YamlValidationException if content cannot be parsed as either JSON or YAML
+     */
+    private List<JsonNode> getYamlJsonNode(String filePath, String content) throws YamlValidationException, IOException {
+        List<JsonNode> docs = new ArrayList<>();
+        try {
+            return List.of(jsonMapper.readTree(content));
+        } catch (JsonProcessingException e) {
+            log.debug("Error parsing file as JSON, trying YAML: {}, {}", filePath, e.getMessage());
+            try (var parser = yamlMapper.createParser(content)) {
+                while (parser.nextToken() != null) {
+                    JsonNode doc = yamlMapper.readTree(parser);
+                    if (doc != null && !doc.isMissingNode()) docs.add(doc);
+                }
+            } catch (JsonProcessingException ex) {
+                log.debug("Error parsing file as YAML: {}, {}", filePath, ex.getMessage());
+                throw new YamlValidationException(ex, null, filePath);
+            }
+        }
+        return docs;
     }
 
     /**

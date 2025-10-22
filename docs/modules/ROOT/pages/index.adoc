@@ -7,47 +7,180 @@
 
 == YAML Schema Validator
 
-The YAML Schema Validator is a command-line utility that validates YAML and JSON files against JSON schema definitions.
-It's built with Spring Boot and provides a simple way to ensure your configuration files comply with predefined schemas.
+YJ Schema Validator is a lightweight Java CLI tool for validating YAML and JSON files against JSON Schema definitions (drafts 2019-09/2020-12). Built with Spring Boot for easy bootstrapping, it uses Jackson for parsing and NetworkNT for robust validation. Perfect for quick local checks or automated CI/CD pipelines.
 
-=== Usage
+== Features
 
-The validator can be run using the following command:
+- *Dual Format Support*: Validates YAML *and* JSON files seamlessly.
+- *Remote Schemas*: Fetch schemas via HTTP/HTTPS (with timeout & SSL ignore options).
+- *Flexible Outputs*: Console (colored), JSON, YAML, JUnit (alpha) for CI integration.
+- *Batch Processing*: Validate multiple files in one run; exits 0 on success, 1 on failure.
+- *Schema Override*: Ignore embedded `$schema` in files for centralized control.
+- Java 17+ compatible; no external deps beyond the fat JAR.
 
-[source,shell]
+== Installation
+
+Download the latest fat JAR from Maven Central:
+
+[source,bash]
 ----
-java -jar yj-schema-validator.jar [options] <file1> <file2> ...
+curl -L -o yj-schema-validator.jar https://repo1.maven.org/maven2/org/alexmond/yj-schema-validator/{page-component-version}/yj-schema-validator-{page-component-version}.jar
 ----
 
-=== Configuration Options
+Verify: `java -jar yj-schema-validator.jar --help`
 
-[cols="1,2"]
-|===
-|Option |Description
+Build from source (requires Maven and Java 17+):
 
-|--schema=<path>
-|Path to the JSON schema file (required unless schemaPathOverride is false)
+[source,bash]
+----
+git clone https://github.com/alexmond/yj-schema-validator.git
+cd yj-schema-validator
+mvn clean package
+java -jar target/yj-schema-validator-{page-component-version}.jar --help
+----
 
-|--schemaPathOverride
-|If set, the schema path must be provided via --schema option
+== Usage
 
-|--help
-|Show help message
-|===
+Basic syntax: `java -jar yj-schema-validator.jar [options] <file1> <file2> ...`
 
-=== Examples
+=== Quick Start
 
-.Validate a single YAML file
-[source,shell]
+Validate a single file (assumes schema in file's `$schema`):
+
+[source,bash]
+----
+java -jar yj-schema-validator.jar config.yaml
+Validation Result: ok
+config.yaml: ok
+----
+
+With explicit schema:
+
+[source,bash]
 ----
 java -jar yj-schema-validator.jar config.yaml --schema=schema.json
 ----
 
-.Validate multiple YAML files
-[source,shell]
+Batch with JUnit report (for CI):
+
+[source,bash]
 ----
-java -jar yj-schema-validator.jar config1.yaml config2.yaml --schema=schema.json
+java -jar yj-schema-validator.jar *.yaml --schema=schema.json --report-type=junit --report-file-name=report.xml
 ----
 
-The validator will exit with code 0 if all files are valid, and code 1 if any validation errors are found or if there are configuration errors.
+=== CI/CD Integration Example (GitHub Actions)
 
+[source,yaml]
+----
+- name: Validate Schemas
+  run: |
+    curl -L -o yj-schema-validator.jar https://repo1.maven.org/maven2/org/alexmond/yj-schema-validator/{page-component-version}/yj-schema-validator-{page-component-version}.jar
+    java -jar yj-schema-validator.jar config/*.yaml --schema=schema.json --report-type=junit --report-file-name=report.xml
+  # Use actions like 'dorny/test-reporter' to publish report.xml
+----
+
+== Configuration
+
+|===
+|Flag |Description |Default |Example
+|`--help`
+|Show usage help
+|N/A
+|`--help`
+
+|`--files`
+|Path to input YAML/JSON file(s) (positional args also supported)
+|N/A
+|`--files=app.yaml or "app.yaml,config.json"
+
+|`--schema`
+|Path or URL to JSON Schema file
+|Embedded `$schema` in file
+|`--schema=schema.json` or `--schema=https://example.com/schema.json`
+
+|`--report-type`
+|Output format: `text` (colored console), `json`, `yaml`, `junit` (alpha), `sarif`
+|`text`
+|`--report-type=junit`
+
+|`--report-file-name`
+|Output file for non-console reports
+|stdout
+|`--report-file-name=validation.json`
+
+|`--color`
+|Enable/disable colored output
+|`true`
+|`--color=false`
+
+|`--http-timeout`
+|Timeout (seconds) for remote schema fetches
+|10
+|`--http-timeout=30`
+
+|`--ignore-ssl-errors`
+|Skip SSL certificate validation for HTTPS schemas
+|`false`
+|`--ignore-ssl-errors`
+
+|`--ignore-embedded-schema`
+|Ignore `$schema` in input files (use only provided schema)
+|`false`
+|`--ignore-embedded-schema`
+
+|===
+
+== Troubleshooting
+
+|===
+|Issue |Cause |Solution
+
+|"No schema found"
+|Missing `--schema`
+|Provide via flag or embed in file.
+
+|YAML parse error
+|Invalid syntax
+|Check line/col in error; use `--color=false` for plain text.
+
+|HTTP timeout
+|Slow remote schema
+|Increase `--http-timeout=30`.
+
+|JUnit alpha issues
+|Experimental
+|Report bugs; fallback to JSON.
+|===
+
+For SSL issues: Use `--ignore-ssl-errors` (not recommended for production).
+
+== Contributing
+
+1. Fork the repo and create a feature branch (`git checkout -b feat/amazing-feature`).
+2. Commit changes (`git commit -m 'Add some AmazingFeature'`).
+3. Push to the branch (`git push origin feat/amazing-feature`).
+4. Open a Pull Request.
+
+Build and test locally:
+
+[source,bash]
+----
+mvn clean package
+mvn test
+----
+
+
+See link:https://github.com/alexmond/yj-schema-validator/issues[open issues] for details.
+
+== License
+
+This project is licensed under the Apache License 2.0 - see the xref:LICENSE[LICENSE] file for details.
+
+== Acknowledgments
+
+- Built on link:https://github.com/networknt/json-schema-validator[NetworkNT JSON Schema Validator].
+- Thanks to contributors: link:https://github.com/alexmond/yj-schema-validator/graphs/contributors[List here].
+
+== Full Documentation
+
+link:https://alexmond.github.io/yj-schema-validator/current/index.html[Read the full docs here]

@@ -1,1 +1,2 @@
 * xref:index.adoc[yj-schema-validator]
+* xref:outputFormats.adoc[Output Formats]

@@ -1,0 +1,64 @@
+= Output Formats
+:description: Detailed guide on available output formats in YJ Schema Validator
+
+== Introduction
+
+YJ Schema Validator supports multiple output formats to accommodate different use cases and integration scenarios.
+This guide details each available format and provides usage examples.
+
+== Available Formats
+
+=== Text Output (Default)
+
+The default console output with optional color support:
+
+image::sample.png[Text output sample]
+
+=== JSON Output
+
+Structured JSON format is ideal for programmatic processing:
+json format is based on json schema draft standard
+https://json-schema.org/draft/2020-12/json-schema-core#name-output-formatting[Output Formatting]
+
+[,json]
+----
+include::example$report.json[]
+----
+
+=== YAML Output
+
+YAML format for better human readability:
+
+[source,yaml]
+----
+include::example$report.yaml[]
+----
+
+=== JUnit XML Output (Alpha)
+
+JUnit XML format for CI/CD integration:
+
+[source,xml]
+----
+include::example$junitreport.xml[]
+----
+
+== Configuration
+
+[cols="1,2,1"]
+|===
+|Option |Description |Example
+
+|`--report-type`
+|Output format selection (`text`, `json`, `yaml`, `junit`, `sarif`)
+|`--report-type=json`
+
+|`--report-file-name`
+|File to write output (defaults to stdout)
+|`--report-file-name=report.json`
+
+|`--color`
+|Enable/disable a colored output (text format only)
+|`--color=false`
+|===
+

@@ -6,12 +6,17 @@ import com.networknt.schema.SpecVersion;
 import com.networknt.schema.output.OutputUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.converter.ConvertWith;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,6 +43,8 @@ public class YamlSchemaValidatorTest {
         outputUnitMap.values().stream().findFirst().ifPresent(outputUnit -> assertTrue(outputUnit::isValid, "YAML validation failed: " + outputUnit));
     }
 
+
+
     @ParameterizedTest
     @CsvSource({
             "src/test/resources/validNoSchema.yaml,src/test/resources/missing-schema.yaml,NoSuchFileException",
@@ -61,10 +68,32 @@ public class YamlSchemaValidatorTest {
     })
     void testYamlValidationInvalid(String yamlPath, String schemaPath, String error) {
         Map<String, OutputUnit> outputUnitMap = yamlSchemaValidator.validate(yamlPath, schemaPath);
-        log.error("Yaml validation error: {}", outputUnitMap.toString());
         OutputUnit outputUnit = outputUnitMap.values().iterator().next();
         assertFalse(outputUnit.isValid());
         assertNotNull(outputUnit.getDetails());
+    }
+
+    static Stream<Arguments> multiDocProvider() {
+        return Stream.of(
+                Arguments.of(
+                        "src/test/resources/multi3valid.yaml", 3, new boolean[]{true, true, true}),
+                Arguments.of(
+                        "src/test/resources/multi3invalid.yaml", 3, new boolean[]{true, false, true})
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("multiDocProvider")
+    void testMultiDocumentYaml(String yamlPath,int numberOfDocuments,boolean[] valid) {
+        Map<String, OutputUnit> sortedOutputUnitMap = new TreeMap<>();
+        sortedOutputUnitMap.putAll(yamlSchemaValidator.validate(yamlPath, null));
+        assertEquals(sortedOutputUnitMap.size(), numberOfDocuments);
+        int index = 0;
+        for (Map.Entry<String, OutputUnit> entry : sortedOutputUnitMap.entrySet()) {
+            OutputUnit outputUnit = entry.getValue();
+            assertEquals(outputUnit.isValid(), valid[index]);
+            index++;
+        }
     }
 
     @ParameterizedTest

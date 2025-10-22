@@ -57,15 +57,7 @@ server:
     session:
       cookie:
         partitioned: true
----
-spring:
-  config:
-    activate:
-      on-profile:
-        - test
 
-sample:
-  string-sample: "Test profile"
 
 
 
