@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.networknt.schema.output.OutputUnit;
+import lombok.Builder;
 import lombok.Data;
 
 import org.springframework.boot.ansi.AnsiColor;

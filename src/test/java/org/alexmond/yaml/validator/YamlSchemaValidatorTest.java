@@ -52,6 +52,7 @@ public class YamlSchemaValidatorTest {
             "src/test/resources/missingfile.yaml,,NoSuchFileException",
             "src/test/resources/empty.yaml,,No schema found in YAML file or provided as parameter",
             "src/test/resources/badformat.yaml,,MarkedYAMLException",
+            "src/test/resources/invalidRemote.json,,HTTP request failed with status code 404 for"
     })
     void testYamlValidationError(String yamlPath, String schemaPath, String error) {
         Map<String, OutputUnit> outputUnitMap = yamlSchemaValidator.validate(yamlPath, schemaPath);

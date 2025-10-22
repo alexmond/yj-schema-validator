@@ -41,19 +41,27 @@ public class YamlSchemaValidatorRunner implements ApplicationRunner {
         if (environment.matchesProfiles("test")) {
             return;
         }
+        FilesOutput filesOutput = Validate(args);
 
+        if (filesOutput == null || filesOutput.isValid()) {
+            System.exit(0);
+        } else {
+            System.exit(1);
+        }
+
+    }
+
+    public FilesOutput Validate(ApplicationArguments args) {
         log.warn(args.toString());
         if (args.containsOption("help")) {
             printHelp();
-            System.exit(0);
-            return;
+            return null;
         }
         String configError = validateConfig(args);
         if (configError != null) {
             System.out.println("Configuration error:" + configError);
             printHelp();
-            System.exit(1);
-            return;
+            return null;
         }
         Map<String, OutputUnit> allResultsl = new LinkedHashMap<>();
         args.getNonOptionArgs().forEach(file -> {
@@ -82,13 +90,7 @@ public class YamlSchemaValidatorRunner implements ApplicationRunner {
         } else {
             System.out.println(reportContent);
         }
-
-        if (filesOutput.isValid()) {
-            System.exit(0);
-        } else {
-            System.exit(1);
-        }
-
+        return filesOutput;
     }
 
     /**
@@ -110,7 +112,6 @@ public class YamlSchemaValidatorRunner implements ApplicationRunner {
                   --color                    Use ANSI colors in text output (default: enabled)
                 """;
         System.out.println(helpText);
-        System.exit(0);
     }
 
     /**
