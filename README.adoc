@@ -80,7 +80,7 @@ Validation Result: ok
 src/test/resources/multi3valid.yaml-1: ok
 src/test/resources/multi3valid.yaml-3: ok
 src/test/resources/multi3valid.yaml-2: ok
----
+----
 === CI/CD Integration Example (GitHub Actions)
 
 [source,yaml]
@@ -91,17 +91,6 @@ src/test/resources/multi3valid.yaml-2: ok
     java -jar yj-schema-validator.jar config/*.yaml --schema=schema.json --report-type=junit > report.xml
   # Use actions like 'dorny/test-reporter' to publish report.xml
 ----
-
-=== Error Handling
-
-On failure (e.g., type mismatch):
-
-invalid.yaml: invalid
-type: integer found, boolean expected
-Validation Result: invalid
-
-
-Exit code: 1 (fail CI jobs).
 
 == Configuration
 
