@@ -9,20 +9,37 @@ import org.alexmond.yaml.validator.output.FilesOutput;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@SpringBootTest
+@ActiveProfiles("test")
 class YamlSchemaValidatorRunnerTest {
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
+    private String reportsDir="src/test/resources/testreport/";
+    private String testDataDir="src/test/resources/testdata/";
+
+    @Autowired
+    private YamlSchemaValidator yamlSchemaValidatorReal;
 
     @BeforeEach
     void setUp() {
@@ -106,6 +123,48 @@ class YamlSchemaValidatorRunnerTest {
         assertNotNull(result, "Expected result not to be null with valid files");
         assertTrue(result.isValid(), "Expected result to be valid for the provided YAML file");
     }
+
+    @ParameterizedTest
+    @CsvSource({
+            "valid.yaml,JSON,test1.json,validyaml.json,true",
+            "valid.yaml,YAML,test1.yaml,validyaml.yaml,true",
+            "valid.yaml,JUNIT,test1.xml,validyaml.xml,true",
+            "valid.yaml,TEXT,test1.txt,validyaml.txt,true",
+    })
+    void fullTestWithReport(String fileName,String reportType,String reportFile,String expectedReport,String valid) {
+        YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
+        Environment environment = mock(Environment.class);
+
+        when(config.getReportType()).thenReturn(ReportType.valueOf(reportType));
+        when(config.getReportFileName()).thenReturn(reportFile);
+
+        YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidatorReal, environment);
+
+        ApplicationArguments args = mock(ApplicationArguments.class);
+        when(args.getNonOptionArgs()).thenReturn(List.of(testDataDir + fileName));
+        FilesOutput result = runner.Validate(args);
+
+        assertNotNull(result, "Expected result not to be null with valid files");
+        if (valid.equals("true")) {
+            assertTrue(result.isValid(), "Expected result to be valid for the provided file");
+        }else{
+            assertFalse(result.isValid(), "Expected result to be not valid for the provided file");
+        }
+        assertTrue(compareFiles(reportFile,reportsDir + expectedReport), "Reports should match");
+
+    }
+
+    public boolean compareFiles(String path1, String path2) {
+        try {
+            byte[] bytes1 = Files.readAllBytes(Paths.get(path1));
+            byte[] bytes2 = Files.readAllBytes(Paths.get(path2));
+            return Arrays.equals(bytes1, bytes2);
+        } catch (IOException e) {
+            // Handles cases where files don't exist or can't be read
+            return false;
+        }
+    }
+    
 
     /**
      * Test to verify that Validate() method processes invalid YAML files and returns invalid output.

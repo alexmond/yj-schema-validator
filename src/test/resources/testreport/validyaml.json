@@ -1,0 +1,11 @@
+{
+  "valid" : true,
+  "files" : {
+    "src/test/resources/testdata/valid.yaml-1" : {
+      "valid" : true
+    },
+    "src/test/resources/testdata/valid.yaml-2" : {
+      "valid" : true
+    }
+  }
+}

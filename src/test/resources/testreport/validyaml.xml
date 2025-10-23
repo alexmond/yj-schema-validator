@@ -1,0 +1,12 @@
+<testsuites name="SchemaValidationSuite" tests="2" failures="0" errors="0" skipped="0">
+  <testsuite name="SchemaValidationSuite" file="src/test/resources" time="0.0" tests="2" failures="0" errors="0" skipped="0">
+    <testcase>
+      <testcase classname="files" name="src/test/resources/testdata/valid.yaml-1" time="0.0">
+        <failure/>
+      </testcase>
+      <testcase classname="files" name="src/test/resources/testdata/valid.yaml-2" time="0.0">
+        <failure/>
+      </testcase>
+    </testcase>
+  </testsuite>
+</testsuites>
