@@ -19,7 +19,7 @@ public class YamlProprtySourceLoaderTest {
     @ParameterizedTest
     @CsvSource({
 //            "src/test/resources/valid.yaml",
-            "src/test/resources/validParam.yaml"
+            "src/test/resources/testdata/validParam.yaml"
     })
     void testSnakeYamlValidation(String yamlPath) throws Exception {
 

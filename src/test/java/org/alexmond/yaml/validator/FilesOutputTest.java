@@ -1,16 +1,22 @@
-package org.alexmond.yaml.validator.output;
+package org.alexmond.yaml.validator;
 
 import com.networknt.schema.output.OutputUnit;
+import org.alexmond.yaml.validator.output.FilesOutput;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.ansi.AnsiColor;
 import org.springframework.boot.ansi.AnsiOutput;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 
+import static java.nio.file.Files.writeString;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FilesOutputTest {
 
@@ -77,13 +83,18 @@ class FilesOutputTest {
 
         // Act
         String junitString = filesOutput.toJunitString();
-
-        // Assert
-        assertThat(junitString).contains("<testsuite name=\"SchemaValidationSuite\"")
-                               .contains("name=\"invalid.yaml\"")
-                               .contains("message=\"Type Mismatch at $.sample.boolean-sample\"")
-                               .contains("integer found, boolean expected");
+        assertTrue(compareFileToString(junitString,"src/test/resources/testreport/test1junit.xml"));
     }
+
+    private boolean compareFileToString(String junitString, String fileName) {
+        try {
+            String fileContent = Files.readString(Path.of(fileName));
+            return junitString.trim().equals(fileContent.trim());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read JUnit XML file", e);
+        }
+    }
+
 
     @Test
     @DisplayName("toColoredString: Should print 'ok' in green color when all files are valid and color is enabled")
@@ -197,5 +208,14 @@ class FilesOutputTest {
         assertThat(result).contains("Path: /path/to/instance");
         assertThat(result).contains("Schema: /path/to/schema");
         assertThat(result).contains("detailError: Detail error message");
+    }
+    
+    private void writeTestFile(String content, String filename) {
+        try {
+            writeString(java.nio.file.Path.of(filename), content);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to write JUnit XML file", e);
+
+        }
     }
 }

@@ -59,7 +59,7 @@ public class YamlLocatorByPath {
 
     @Test
     public void LocatorTest() throws Exception {
-        Path yaml = Path.of("src/test/resources/invalid.yaml");
+        Path yaml = Path.of("src/test/resources/testdata/invalid.yaml");
         String path = "sample.boolean-sample";
         Optional<Location> loc = find(path, yaml);
         System.out.println(loc.map(Object::toString).orElse("Not found"));

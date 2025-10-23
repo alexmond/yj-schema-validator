@@ -30,12 +30,12 @@ public class YamlSchemaValidatorTest {
 
     @ParameterizedTest(name = "Validate {0} against schema {1}")
     @CsvSource({
-            "src/test/resources/valid.yaml,src/test/resources/sample-schema.json",
-            "src/test/resources/valid.yaml,src/test/resources/sample-schema.yaml",
-            "src/test/resources/valid.yaml,https://alexmond.github.io/spring-boot-config-json-schema-starter/current/_attachments/boot-generic-config.json",
-            "src/test/resources/valid.yaml,",
-            "src/test/resources/valid.json,",
-            "src/test/resources/remoteValid.yaml,"
+            "src/test/resources/testdata/valid.yaml,src/test/resources/testdata/sample-schema.json",
+            "src/test/resources/testdata/valid.yaml,src/test/resources/testdata/sample-schema.yaml",
+            "src/test/resources/testdata/valid.yaml,https://alexmond.github.io/spring-boot-config-json-schema-starter/current/_attachments/boot-generic-config.json",
+            "src/test/resources/testdata/valid.yaml,",
+            "src/test/resources/testdata/valid.json,",
+            "src/test/resources/testdata/remoteValid.yaml,"
     })
     void shouldValidateYamlSuccessfully(String yamlPath, String schemaPath) {
         Map<String, OutputUnit> outputUnitMap;
@@ -47,12 +47,12 @@ public class YamlSchemaValidatorTest {
 
     @ParameterizedTest
     @CsvSource({
-            "src/test/resources/validNoSchema.yaml,src/test/resources/missing-schema.yaml,NoSuchFileException",
-            "src/test/resources/validNoSchema.yaml,https://alexmond.github.io/spring-boot-config-json-schema-starter/current/_attachments/missing.json,HTTP request failed with status code 404",
-            "src/test/resources/missingfile.yaml,,NoSuchFileException",
-            "src/test/resources/empty.yaml,,No schema found in YAML file or provided as parameter",
-            "src/test/resources/badformat.yaml,,MarkedYAMLException",
-            "src/test/resources/invalidRemote.json,,HTTP request failed with status code 404 for"
+            "src/test/resources/testdata/validNoSchema.yaml,src/test/resources/testdata/missing-schema.yaml,NoSuchFileException",
+            "src/test/resources/testdata/validNoSchema.yaml,https://alexmond.github.io/spring-boot-config-json-schema-starter/current/_attachments/missing.json,HTTP request failed with status code 404",
+            "src/test/resources/testdata/missingfile.yaml,,NoSuchFileException",
+            "src/test/resources/testdata/empty.yaml,,No schema found in YAML file or provided as parameter",
+            "src/test/resources/testdata/badformat.yaml,,MarkedYAMLException",
+            "src/test/resources/testdata/invalidRemote.json,,HTTP request failed with status code 404 for"
     })
     void testYamlValidationError(String yamlPath, String schemaPath, String error) {
         Map<String, OutputUnit> outputUnitMap = yamlSchemaValidator.validate(yamlPath, schemaPath);
@@ -65,7 +65,7 @@ public class YamlSchemaValidatorTest {
 
     @ParameterizedTest
     @CsvSource(delimiter = ':', value = {
-            "src/test/resources/invalid.yaml::integer found, boolean expected",
+            "src/test/resources/testdata/invalid.yaml::integer found, boolean expected",
     })
     void testYamlValidationInvalid(String yamlPath, String schemaPath, String error) {
         Map<String, OutputUnit> outputUnitMap = yamlSchemaValidator.validate(yamlPath, schemaPath);
@@ -77,9 +77,9 @@ public class YamlSchemaValidatorTest {
     static Stream<Arguments> multiDocProvider() {
         return Stream.of(
                 Arguments.of(
-                        "src/test/resources/multi3valid.yaml", 3, new boolean[]{true, true, true}),
+                        "src/test/resources/testdata/multi3valid.yaml", 3, new boolean[]{true, true, true}),
                 Arguments.of(
-                        "src/test/resources/multi3invalid.yaml", 3, new boolean[]{true, false, true})
+                        "src/test/resources/testdata/multi3invalid.yaml", 3, new boolean[]{true, false, true})
         );
     }
 

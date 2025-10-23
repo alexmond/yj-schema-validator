@@ -40,12 +40,12 @@ jobs:
           min-coverage-overall: 40
           min-coverage-changed-files: 60
 
-    #    - name: Add coverage to PR
-    #      uses: codecov/codecov-action@v3
-    #      with:
-    #        token: ${{ secrets.CODECOV_TOKEN }}
-    #        files: ./target/site/jacoco/jacoco.xml
-    #        fail_ci_if_error: true
+      - name: Add coverage to PR
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./target/site/jacoco/jacoco.xml
+          fail_ci_if_error: true
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
 #    - name: Update dependency graph

@@ -89,17 +89,17 @@ class YamlSchemaValidatorRunnerTest {
         YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
         Environment environment = mock(Environment.class);
 
-        when(config.getSchema()).thenReturn("sample-schema.json");
+        when(config.getSchema()).thenReturn("testdata/sample-schema.json");
         when(config.getReportType()).thenReturn(ReportType.JSON);
         when(config.isColor()).thenReturn(false);
 
         YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
 
         ApplicationArguments args = mock(ApplicationArguments.class);
-        when(args.getNonOptionArgs()).thenReturn(List.of("valid.yaml"));
+        when(args.getNonOptionArgs()).thenReturn(List.of("testdata/valid.yaml"));
         OutputUnit outputUnit = new OutputUnit();
         outputUnit.setValid(true);
-        when(yamlSchemaValidator.validate("valid.yaml", "sample-schema.json")).thenReturn(Collections.singletonMap("valid.yaml", outputUnit));
+        when(yamlSchemaValidator.validate("testdata/valid.yaml", "testdata/sample-schema.json")).thenReturn(Collections.singletonMap("testdata/valid.yaml", outputUnit));
 
         FilesOutput result = runner.Validate(args);
 
@@ -116,19 +116,19 @@ class YamlSchemaValidatorRunnerTest {
         YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
         Environment environment = mock(Environment.class);
 
-        when(config.getSchema()).thenReturn("sample-schema.json");
+        when(config.getSchema()).thenReturn("testdata/sample-schema.json");
         when(config.getReportType()).thenReturn(ReportType.JSON);
         when(config.isColor()).thenReturn(false);
 
         YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
 
         ApplicationArguments args = mock(ApplicationArguments.class);
-        when(args.getNonOptionArgs()).thenReturn(List.of("invalid.yaml"));
+        when(args.getNonOptionArgs()).thenReturn(List.of("testdata/invalid.yaml"));
 
         OutputUnit invalidOutputUnit = mock(OutputUnit.class);
         when(invalidOutputUnit.isValid()).thenReturn(false);
 
-        when(yamlSchemaValidator.validate("invalid.yaml", "sample-schema.json")).thenReturn(Collections.singletonMap("invalid.yaml", invalidOutputUnit));
+        when(yamlSchemaValidator.validate("testdata/invalid.yaml", "testdata/sample-schema.json")).thenReturn(Collections.singletonMap("testdata/invalid.yaml", invalidOutputUnit));
 
         FilesOutput result = runner.Validate(args);
 
@@ -145,7 +145,7 @@ class YamlSchemaValidatorRunnerTest {
         YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
         Environment environment = mock(Environment.class);
 
-        when(config.getSchema()).thenReturn("sample-schema.json");
+        when(config.getSchema()).thenReturn("testdata/sample-schema.json");
         when(config.getReportType()).thenReturn(ReportType.JSON);
         when(config.isColor()).thenReturn(false);
 
@@ -154,7 +154,7 @@ class YamlSchemaValidatorRunnerTest {
         ApplicationArguments args = mock(ApplicationArguments.class);
         when(args.getNonOptionArgs()).thenReturn(List.of("error-prone.yaml"));
 
-        doThrow(new RuntimeException("Simulated exception")).when(yamlSchemaValidator).validate("error-prone.yaml", "sample-schema.json");
+        doThrow(new RuntimeException("Simulated exception")).when(yamlSchemaValidator).validate("error-prone.yaml", "testdata/sample-schema.json");
 
         FilesOutput result = runner.Validate(args);
 
