@@ -28,7 +28,6 @@ jobs:
         with:
           files: |
             **/surefire-reports/TEST-*.xml
-            **/failsafe-reports/TEST-*.xml
 
       - name: Add coverage to PR
         id: jacoco
@@ -54,7 +53,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: |
             **/surefire-reports/TEST-*.xml
-            **/failsafe-reports/TEST-*.xml
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
 #    - name: Update dependency graph
