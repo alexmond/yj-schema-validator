@@ -1,0 +1,17 @@
+{
+  "valid" : false,
+  "files" : {
+    "src/test/resources/testdata/invalid.yaml" : {
+      "valid" : false,
+      "details" : [ {
+        "valid" : false,
+        "evaluationPath" : "$.properties.sample.properties.boolean-sample",
+        "schemaLocation" : "urn:example:10#/properties/sample/properties/boolean-sample",
+        "instanceLocation" : "$.sample.boolean-sample",
+        "errors" : {
+          "type" : "integer found, boolean expected"
+        }
+      } ]
+    }
+  }
+}

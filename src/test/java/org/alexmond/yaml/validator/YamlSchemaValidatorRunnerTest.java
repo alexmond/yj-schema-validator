@@ -134,6 +134,10 @@ class YamlSchemaValidatorRunnerTest {
             "multi3invalid.yaml,YAML,test1.yaml,multi3invalidyaml.yaml,false",
             "multi3invalid.yaml,JUNIT,test1.xml,multi3invalidyaml.xml,false",
             "multi3invalid.yaml,TEXT,test1.txt,multi3invalidyaml.txt,false",
+            "invalid.yaml,JSON,test1.json,invalidyaml.json,false",
+            "invalid.yaml,YAML,test1.yaml,invalidyaml.yaml,false",
+            "invalid.yaml,JUNIT,test1.xml,invalidyaml.xml,false",
+            "invalid.yaml,TEXT,test1.txt,invalidyaml.txt,false",
     })
     void fullTestWithReport(String fileName,String reportType,String reportFile,String expectedReport,String valid) {
         YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);

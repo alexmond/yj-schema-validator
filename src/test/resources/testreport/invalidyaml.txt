@@ -1,0 +1,6 @@
+Validation Result: invalid
+src/test/resources/testdata/invalid.yaml: invalid
+ Details:
+ Path: $.sample.boolean-sample
+ Schema: urn:example:10#/properties/sample/properties/boolean-sample
+ type: integer found, boolean expected
