@@ -1,0 +1,17 @@
+{
+  "valid" : false,
+  "files" : {
+    "src/test/resources/testdata/multi3invalid.yaml-1" : {
+      "valid" : true
+    },
+    "src/test/resources/testdata/multi3invalid.yaml-2" : {
+      "valid" : false,
+      "errors" : {
+        "error" : "No schema found in YAML file or provided as parameter"
+      }
+    },
+    "src/test/resources/testdata/multi3invalid.yaml-3" : {
+      "valid" : true
+    }
+  }
+}

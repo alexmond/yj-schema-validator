@@ -1,0 +1,5 @@
+Validation Result: invalid
+src/test/resources/testdata/multi3invalid.yaml-1: ok
+src/test/resources/testdata/multi3invalid.yaml-2: invalid
+ error: No schema found in YAML file or provided as parameter
+src/test/resources/testdata/multi3invalid.yaml-3: ok

@@ -4,6 +4,7 @@ image:https://img.shields.io/maven-central/v/org.alexmond/yj-schema-validator.sv
 image:https://img.shields.io/badge/License-Apache%202.0-blue.svg[License,link=LICENSE]
 image:https://img.shields.io/github/actions/workflow/status/alexmond/yj-schema-validator/maven.yml[Build Status,link=https://github.com/alexmond/yj-schema-validator/actions]
 image:https://img.shields.io/badge/Java-17%2B-blue.svg[Java 17+,link=https://openjdk.org/]
+image:https://codecov.io/github/alexmond/yj-schema-validator/graph/badge.svg?token=R22SVVXZT6[Code Coverage,link=https://codecov.io/github/alexmond/yj-schema-validator]
 
 image::sample.png[]
 [[description]]
