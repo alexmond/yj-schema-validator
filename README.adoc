@@ -137,11 +137,6 @@ src/test/resources/multi3valid.yaml-2: ok
 |`false`
 |`--ignore-ssl-errors`
 
-|`--ignore-embedded-schema`
-|Ignore `$schema` in input files (use only provided schema)
-|`false`
-|`--ignore-embedded-schema`
-
 |===
 
 == Troubleshooting

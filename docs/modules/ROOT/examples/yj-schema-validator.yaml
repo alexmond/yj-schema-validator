@@ -1,4 +1,4 @@
-$schema: ./docs/modules/ROOT/attachments/yj-schema-validator-config.yaml
+$schema: "https://alexmond.github.io/yj-schema-validator/current/_attachments/yj-schema-validator-config.yaml"
 #logging:
 #  level:
 #    root: error

@@ -1,0 +1,8 @@
+:toc: left
+:sectnums:
+:description: A command-line utility for validating YAML and JSON files against JSON schema definitions, built with Spring Boot
+:keywords: YAML validator, JSON validator, Schema validation, JSON Schema, Spring Boot, Java
+:author: Alexander Mondshain
+:email: alex.mondshain@gmail.com
+// :source-highlighter: highlight.js  // Optional: For code syntax highlighting
+:imagesdir: ../images

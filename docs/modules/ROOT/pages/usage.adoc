@@ -1,0 +1,41 @@
+include::_header.adoc[]
+= Usage
+
+Basic syntax: `java -jar yj-schema-validator.jar [options] <file1> <file2> ...`
+
+[#_quick_start]
+=== Quick Start
+
+Validate a single file (assumes schema in file's `$schema`):
+
+[source,bash]
+----
+java -jar yj-schema-validator.jar config.yaml
+Validation Result: ok
+config.yaml: ok
+----
+
+With explicit schema:
+
+[source,bash]
+----
+java -jar yj-schema-validator.jar config.yaml --schema=schema.json
+----
+
+Batch with JUnit report (for CI):
+
+[source,bash]
+----
+java -jar yj-schema-validator.jar *.yaml --schema=schema.json --report-type=junit --report-file-name=report.xml
+----
+[#_ci_cd_integration_example_github_actions]
+=== CI/CD Integration Example (GitHub Actions)
+
+[source,yaml,subs=+attributes]
+----
+- name: Validate Schemas
+  run: |
+    curl -L -o yj-schema-validator.jar https://repo1.maven.org/maven2/org/alexmond/yj-schema-validator/{page-component-version}/yj-schema-validator-{page-component-version}.jar
+    java -jar yj-schema-validator.jar config/*.yaml --schema=schema.json --report-type=junit --report-file-name=report.xml
+  # Use actions like 'dorny/test-reporter' to publish report.xml
+----

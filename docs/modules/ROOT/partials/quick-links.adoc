@@ -1,0 +1,12 @@
+[.quick-links]
+[role="lead"]
+== Quick Links
+
+* xref:installation.adoc[Install the JAR]
+* xref:usage.adoc[Run Your First Validation]
+* xref:configuration.adoc[Full Options]
+
+
+[discrete]
+=== Need Help?
+link:https://github.com/alexmond/yj-schema-validator/discussions[Ask in Discussions] | link:https://github.com/alexmond/yj-schema-validator/issues[Report a Bug]

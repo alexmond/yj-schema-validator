@@ -1,0 +1,21 @@
+include::_header.adoc[]
+= Installation
+
+Download the latest fat JAR from Maven Central:
+
+[source,bash,subs=+attributes]
+----
+curl -L -o yj-schema-validator.jar https://repo1.maven.org/maven2/org/alexmond/yj-schema-validator/{page-component-version}/yj-schema-validator-{page-component-version}.jar
+----
+
+Verify: `java -jar yj-schema-validator.jar --help`
+
+Build from source (requires Maven and Java 17+):
+
+[source,bash,subs=+attributes]
+----
+git clone https://github.com/alexmond/yj-schema-validator.git
+cd yj-schema-validator
+mvn clean package
+java -jar target/yj-schema-validator-{page-component-version}.jar --help
+----

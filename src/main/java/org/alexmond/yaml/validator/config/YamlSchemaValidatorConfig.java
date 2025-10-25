@@ -74,7 +74,7 @@ public class YamlSchemaValidatorConfig {
      * @value true
      * @since 1.0
      */
-    private boolean isIgnoreSslErrors = true;
+    private boolean ignoreSslErrors = false;
 
     /**
      * Flag to control whether to use colored output in the console.

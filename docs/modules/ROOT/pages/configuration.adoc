@@ -1,0 +1,93 @@
+include::_header.adoc[]
+= Configuration
+
+[#_command_line]
+== Command line
+|===
+|Flag |Description |Default |Example
+
+|`--help`
+|Show usage help
+|N/A
+|`--help`
+
+|`--files`
+|Array of file paths to validate against the schema. Can contain both YAML and JSON files. Positional args also supported.
+|N/A
+|`--files=app.yaml` or `"app.yaml,config.json"`
+
+|`--schema`
+|Path to the JSON schema in either JSON or YAML file format used for validation as a fallback. Can be either a local file path or URL.
+|Embedded `$schema` in file
+|`--schema=schema.json` or `--schema=https://example.com/schema.json`
+
+|`--schema-override`
+|Override `$schema` from the file with the provided `--schema`.
+|`false`
+|`--schema-override=true`
+
+|`--report-type`
+|Validation report type: `text`, `json`, `yaml`, `junit`(alpha)
+|`text`
+|`--report-type=junit`
+
+
+|`--report-file-name`
+|Output file for non-console reports
+|stdout
+|`--report-file-name=validation.json`
+
+|`--color`
+|Enable/disable colored output
+|`true`
+|`--color=false`
+
+|`--http-timeout`
+|Timeout (seconds) for remote schema fetches
+|10
+|`--http-timeout=30`
+
+|`--ignore-ssl-errors`
+|Skip SSL certificate validation for HTTPS schemas
+|`false`
+|`--ignore-ssl-errors`
+
+|===
+[#_config_file]
+== Config file
+Same options can be used in a config file **yj-schema-validator.yaml**
+
+.Schema files for config files:
+* link:https://alexmond.github.io/yj-schema-validator/current/_attachments/yj-schema-validator-config.yaml[YAML Schema^]
+* link:https://alexmond.github.io/yj-schema-validator/current/_attachments/yj-schema-validator-config.json[JSON Schema^]
+
+Example config file
+
+[source,yaml]
+----
+include::example$yj-schema-validator.yaml[]
+----
+[#_troubleshooting]
+== Troubleshooting
+
+|===
+|Issue |Cause |Solution
+
+|"No schema found"
+|Missing `--schema`
+|Provide via flag or embed in file.
+
+|YAML parse error
+|Invalid syntax
+|Check line/col in error; use `--color=false` for plain text.
+
+|HTTP timeout
+|Slow remote schema
+|Increase `--http-timeout=30`.
+
+|JUnit alpha issues
+|Experimental
+|Report bugs; fallback to JSON.
+|===
+
+For SSL issues: Use `--ignore-ssl-errors` (not recommended for production).
