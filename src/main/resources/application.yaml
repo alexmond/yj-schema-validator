@@ -1,6 +1,0 @@
-logging:
-  level:
-    root: error
-#spring:
-#  application:
-#    version: ${build.version}

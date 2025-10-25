@@ -1,4 +1,4 @@
-package org.alexmond.yaml.validator;// Java
+package org.alexmond.yaml.validator.testimpl;// Java
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -90,12 +90,31 @@ public class YamlSchemaValidator {
                 return genericError("No schema found in YAML file or provided as parameter");
             } else {
                 JsonSchema schema = getSchemaByPath(schemaPath);
+                schema.initializeValidators();
                 return schema.validate(fileNode.toString(), InputFormat.JSON, OutputFormat.LIST,
-                        executionConfiguration -> {
-                            executionConfiguration.getExecutionConfig().setAnnotationCollectionFilter(keyword -> true);
-                            executionConfiguration.getExecutionConfig().setFormatAssertionsEnabled(true);
+                        executionContext -> {
+                            executionContext.getExecutionConfig().setFormatAssertionsEnabled(true);
+                            executionContext.getExecutionConfig().setAnnotationCollectionEnabled(true);
                         });
+
+
+
             }
+//            SchemaRegistryConfig config = SchemaRegistryConfig.builder()
+//                    .formatAssertionsEnabled(true)  // Treat format failures as errors
+//                    .build();
+//
+//            SchemaRegistry schemaRegistry = SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12,
+//                    builder -> builder.schemaRegistryConfig(config));
+//
+//            Schema schema = schemaRegistry.getSchema(SchemaLocation.of("schema.json"));
+//
+//// Per-run override (in validate)
+//            List<Error> errors = schema.validate(input, InputFormat.JSON, executionContext -> {
+//                executionContext.executionConfig(ExecutionConfig.builder()
+//                        .formatAssertionsEnabled(true)  // Enable here if global is false
+//                        .build());
+//            });
         } catch (IllegalArgumentException |
                  YamlValidationException e) { // TODO: check what it is and where it is coming from and if it is appropriate
             // IllegalArgumentException - from getSchemaPathFromNode

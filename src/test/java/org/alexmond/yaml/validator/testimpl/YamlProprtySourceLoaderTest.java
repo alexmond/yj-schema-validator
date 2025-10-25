@@ -1,4 +1,4 @@
-package org.alexmond.yaml.validator;
+package org.alexmond.yaml.validator.testimpl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
@@ -15,15 +15,17 @@ import java.util.List;
 
 @Slf4j
 public class YamlProprtySourceLoaderTest {
+    private String reportsDir="src/test/resources/testreport/";
+    private String testDataDir="src/test/resources/testdata/";
 
     @ParameterizedTest
     @CsvSource({
 //            "src/test/resources/valid.yaml",
-            "src/test/resources/testdata/validParam.yaml"
+            "validParam.yaml"
     })
     void testSnakeYamlValidation(String yamlPath) throws Exception {
 
-        Resource resource = new FileSystemResource(yamlPath);
+        Resource resource = new FileSystemResource(testDataDir+yamlPath);
         YamlPropertySourceLoader loader = new YamlPropertySourceLoader();
         List<PropertySource<?>> sources = loader.load("config", resource);
 

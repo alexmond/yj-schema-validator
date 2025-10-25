@@ -19,6 +19,7 @@ public class YamlSchemaValidatorApplication {
      *             --help: Show help message
      */
     public static void main(String[] args) {
+        System.setProperty("spring.config.name", "yj-schema-validator");
         SpringApplication.run(YamlSchemaValidatorApplication.class, args);
     }
 }

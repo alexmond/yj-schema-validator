@@ -1,0 +1,14 @@
+spring:
+  config:
+    name: yj-schema-validator
+  application:
+    name: yj-schema-validator
+
+logging:
+  level:
+    root: error
+json-config-schema:
+  schema-id: urn:uuid:${spring.config.name}:1.0.0
+  title: ${spring.config.name}
+  description: YAML JSON file json schema validator
+

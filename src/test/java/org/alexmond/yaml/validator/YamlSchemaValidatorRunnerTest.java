@@ -76,6 +76,28 @@ class YamlSchemaValidatorRunnerTest {
     }
 
     /**
+     * Test to verify that Validate() method returns null and displays appropriate message
+     * when no YAML/JSON files are provided as arguments.
+     */
+    @Test
+    void testValidateNoFiles() {
+        YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
+        YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
+        Environment environment = mock(Environment.class);
+
+        YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
+
+        ApplicationArguments args = mock(ApplicationArguments.class);
+
+        FilesOutput result = runner.Validate(args);
+
+        assertNull(result, "Expected result to be null when '--help' option is passed");
+        verify(args, times(1)).containsOption("help");
+        String expected = "At least one YAML/JSON file must be provided as a non-option argument";
+        assertTrue(outContent.toString().contains(expected), "Output should contain:" + expected);
+    }
+
+    /**
      * Test to verify that Validate() method returns null when configuration validation fails.
      */
     @Test
@@ -95,6 +117,8 @@ class YamlSchemaValidatorRunnerTest {
         FilesOutput result = runner.Validate(args);
 
         assertNull(result, "Expected result to be null when configuration is invalid");
+        String expected = "Schema path must be provided when schemaPathOverride is enabled";
+        assertTrue(outContent.toString().contains(expected), "Output should contain:" + expected);
     }
 
     /**
@@ -124,6 +148,15 @@ class YamlSchemaValidatorRunnerTest {
         assertTrue(result.isValid(), "Expected result to be valid for the provided YAML file");
     }
 
+    /**
+     * Test validation of YAML files with different report types and expected outcomes.
+     *
+     * @param fileName       The name of the YAML file to validate
+     * @param reportType     The type of report to generate (JSON, YAML, JUNIT, TEXT)
+     * @param reportFile     The output report file name
+     * @param expectedReport The expected report file to compare against
+     * @param valid          Expected validation result ("true" or "false")
+     */
     @ParameterizedTest
     @CsvSource({
             "valid.yaml,JSON,test1.json,validyaml.json,true",
@@ -162,6 +195,50 @@ class YamlSchemaValidatorRunnerTest {
 
     }
 
+    /**
+     * Test validation of YAML files using configuration files instead of command line arguments.
+     *
+     * @param fileName       The name of the YAML file to validate
+     * @param reportType     The type of report to generate (JSON, YAML, JUNIT, TEXT)
+     * @param reportFile     The output report file name
+     * @param expectedReport The expected report file to compare against
+     * @param valid          Expected validation result ("true" or "false")
+     */
+    @ParameterizedTest
+    @CsvSource({
+            "valid.yaml,JSON,test1.json,validyaml.json,true",
+    })
+    void fullTestWithReportConfigFiles(String fileName,String reportType,String reportFile,String expectedReport,String valid) {
+        YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
+        Environment environment = mock(Environment.class);
+
+        when(config.getReportType()).thenReturn(ReportType.valueOf(reportType));
+        when(config.getReportFileName()).thenReturn(reportFile);
+
+        YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidatorReal, environment);
+
+        ApplicationArguments args = mock(ApplicationArguments.class);
+        when(args.getNonOptionArgs()).thenReturn(List.of("none.yaml"));
+        when(config.getFiles()).thenReturn(List.of(testDataDir + fileName));
+        FilesOutput result = runner.Validate(args);
+
+        assertNotNull(result, "Expected result not to be null with valid files");
+        if (valid.equals("true")) {
+            assertTrue(result.isValid(), "Expected result to be valid for the provided file");
+        }else{
+            assertFalse(result.isValid(), "Expected result to be not valid for the provided file");
+        }
+        assertTrue(compareFiles(reportFile,reportsDir + expectedReport), "Reports should match");
+
+    }
+
+    /**
+     * Compares two files byte by byte to check if they are identical.
+     *
+     * @param path1 Path to the first file
+     * @param path2 Path to the second file
+     * @return true if files are identical, false otherwise or if files cannot be read
+     */
     public boolean compareFiles(String path1, String path2) {
         try {
             byte[] bytes1 = Files.readAllBytes(Paths.get(path1));
@@ -192,8 +269,8 @@ class YamlSchemaValidatorRunnerTest {
         ApplicationArguments args = mock(ApplicationArguments.class);
         when(args.getNonOptionArgs()).thenReturn(List.of("testdata/invalid.yaml"));
 
-        OutputUnit invalidOutputUnit = mock(OutputUnit.class);
-        when(invalidOutputUnit.isValid()).thenReturn(false);
+        OutputUnit invalidOutputUnit = new OutputUnit();
+        invalidOutputUnit.setValid(false);
 
         when(yamlSchemaValidator.validate("testdata/invalid.yaml", "testdata/sample-schema.json")).thenReturn(Collections.singletonMap("testdata/invalid.yaml", invalidOutputUnit));
 

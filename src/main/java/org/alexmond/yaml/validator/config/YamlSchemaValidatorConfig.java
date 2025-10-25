@@ -3,8 +3,11 @@ package org.alexmond.yaml.validator.config;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 import java.time.Duration;
+import java.util.List;
 
 /**
  * Configuration properties for YAML schema validation.
@@ -13,7 +16,7 @@ import java.time.Duration;
  *
  * @since 1.0
  */
-@Configuration
+@Component
 @Data
 @ConfigurationProperties
 public class YamlSchemaValidatorConfig {
@@ -24,7 +27,7 @@ public class YamlSchemaValidatorConfig {
      *
      * @since 1.0
      */
-    private String[] files;
+    private List<String> files;
     /**
      * Path to the JSON schema in either JSON or YAML file format used for validation.
      * Can be either a local file path or URL.

@@ -1,0 +1,10 @@
+spring:
+  config:
+    name: yj-schema-validator
+  application:
+    name: yj-schema-validator
+
+logging:
+  level:
+    root: error
+

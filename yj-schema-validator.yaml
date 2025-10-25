@@ -1,0 +1,5 @@
+$schema: ./docs/modules/ROOT/attachments/yj-schema-validator-config.yaml
+#logging:
+#  level:
+#    root: error
+#    org.alexmond: debug
