@@ -1511,6 +1511,7 @@ properties:
     description: "Flag to control whether to use colored output in the console. When\
       \ true, validation results will be displayed with ANSI color codes. @value true\
       \ @since 1.0"
+    default: true
   files:
     type: "array"
     description: "Array of file paths to validate against the schema. Can contain\
@@ -1521,11 +1522,13 @@ properties:
     type: "string"
     description: "HTTP timeout in seconds for fetching remote schemas. @value 10 seconds\
       \ @since 1.0"
+    default: "10s"
   is-ignore-ssl-errors:
     type: "boolean"
     description: "Flag to control whether SSL certificate validation errors should\
       \ be ignored. When true, SSL certificate validation errors will be ignored during\
       \ HTTP requests. @value true @since 1.0"
+    default: true
   json-config-schema:
     type: "object"
     $anchor: "org.alexmond.config.json.schema.config.JsonConfigSchemaConfig"
@@ -1898,6 +1901,7 @@ properties:
   report-type:
     type: "string"
     description: "Type of validation report to generate. @value TEXT @since 1.0"
+    default: "text"
     enum:
     - "junit"
     - "JUNIT"
@@ -1916,6 +1920,7 @@ properties:
     description: "Flag to override a schema path specified in the YAML / JSON file.\
       \ If true, uses schemaPath property instead of $schema from YAML. @value false\
       \ @since 1.0"
+    default: false
   spring:
     type: "object"
     properties:

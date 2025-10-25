@@ -126,7 +126,7 @@ public class YamlSchemaValidatorRunner implements ApplicationRunner {
      * @return Error message if validation fails, null if validation succeeds
      */
     private String validateConfig(ApplicationArguments args) {
-        if (args.getNonOptionArgs().isEmpty())
+        if (args.getNonOptionArgs().isEmpty() && config.getFiles().isEmpty())
             return "At least one YAML/JSON file must be provided as a non-option argument";
         if (config.isSchemaOverride() && config.getSchema() == null) {
             return "Schema path must be provided when schemaPathOverride is enabled";
