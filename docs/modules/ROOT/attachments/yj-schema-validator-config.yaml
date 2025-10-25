@@ -1471,12 +1471,12 @@ properties:
     description: "HTTP timeout in seconds for fetching remote schemas. @value 10 seconds\
       \ @since 1.0"
     default: "10s"
-  is-ignore-ssl-errors:
+  ignore-ssl-errors:
     type: "boolean"
     description: "Flag to control whether SSL certificate validation errors should\
       \ be ignored. When true, SSL certificate validation errors will be ignored during\
       \ HTTP requests. @value true @since 1.0"
-    default: true
+    default: false
   json-config-schema:
     type: "object"
     $anchor: "org.alexmond.config.json.schema.config.JsonConfigSchemaConfig"
