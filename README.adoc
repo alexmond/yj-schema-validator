@@ -29,7 +29,7 @@ Download the latest fat JAR from Maven Central:
 
 [source,bash]
 ----
-curl -L -o yj-schema-validator.jar https://repo1.maven.org/maven2/org/alexmond/yj-schema-validator/0.0.3/yj-schema-validator-0.0.3.jar
+curl -L -o yj-schema-validator.jar https://repo1.maven.org/maven2/org/alexmond/yj-schema-validator/1.0.0/yj-schema-validator-1.0.0.jar
 ----
 
 Verify: `java -jar yj-schema-validator.jar --help`
@@ -41,7 +41,7 @@ Build from source (requires Maven and Java 17+):
 git clone https://github.com/alexmond/yj-schema-validator.git
 cd yj-schema-validator
 mvn clean package
-java -jar target/yj-schema-validator-0.0.3.jar --help
+java -jar target/yj-schema-validator-1.0.0.jar --help
 ----
 
 == Usage
