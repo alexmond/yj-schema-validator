@@ -181,9 +181,10 @@ mvn test
 
 See link:https://github.com/alexmond/yj-schema-validator/issues[open issues] for details.
 
+[[license]]
 == License
 
-This project is licensed under the Apache License 2.0 - see the xref:LICENSE[LICENSE] file for details.
+Licensed under link:LICENSE[Apache 2.0 License].
 
 == Acknowledgments
 
