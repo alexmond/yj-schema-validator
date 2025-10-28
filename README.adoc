@@ -1,3 +1,4 @@
+:version: 1.0.1
 = YJ Schema Validator
 
 image:https://img.shields.io/maven-central/v/org.alexmond/yj-schema-validator.svg?label=Maven%20Central[Maven Central,link=https://search.maven.org/artifact/yj-schema-validator]
@@ -27,21 +28,21 @@ YJ Schema Validator is a lightweight Java CLI tool for validating YAML and JSON 
 
 Download the latest fat JAR from Maven Central:
 
-[source,bash]
+[source,bash,subs=+attributes]
 ----
-curl -L -o yj-schema-validator.jar https://repo1.maven.org/maven2/org/alexmond/yj-schema-validator/1.0.0/yj-schema-validator-1.0.0.jar
+curl -L -o yj-schema-validator.jar https://repo1.maven.org/maven2/org/alexmond/yj-schema-validator/{version}/yj-schema-validator-{version}.jar
 ----
 
 Verify: `java -jar yj-schema-validator.jar --help`
 
 Build from source (requires Maven and Java 17+):
 
-[source,bash]
+[source,bash,subs=+attributes]
 ----
 git clone https://github.com/alexmond/yj-schema-validator.git
 cd yj-schema-validator
 mvn clean package
-java -jar target/yj-schema-validator-1.0.0.jar --help
+java -jar target/yj-schema-validator-{version}.jar --help
 ----
 
 == Usage
@@ -84,11 +85,11 @@ src/test/resources/multi3valid.yaml-2: ok
 ----
 === CI/CD Integration Example (GitHub Actions)
 
-[source,yaml]
+[source,yaml,subs=+attributes]
 ----
 - name: Validate Schemas
   run: |
-    curl -L -o yj-schema-validator.jar https://repo1.maven.org/maven2/org/alexmond/yj-schema-validator/0.0.2/yj-schema-validator-0.0.2.jar
+    curl -L -o yj-schema-validator.jar https://repo1.maven.org/maven2/org/alexmond/yj-schema-validator/{version}/yj-schema-validator-{version}.jar
     java -jar yj-schema-validator.jar config/*.yaml --schema=schema.json --report-type=junit > report.xml
   # Use actions like 'dorny/test-reporter' to publish report.xml
 ----
