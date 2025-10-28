@@ -1480,6 +1480,7 @@ properties:
   json-config-schema:
     type: "object"
     $anchor: "org.alexmond.config.json.schema.config.JsonConfigSchemaConfig"
+    description: "JSON Schema configuration properties"
     properties:
       additional-exclude-classes:
         type: "array"
@@ -1503,7 +1504,7 @@ properties:
         type: "boolean"
         description: "Allow additional properties not defined in schema, currently\
           \ not supported by intellij"
-        default: true
+        default: "true"
       description:
         type: "string"
         description: "Schema description"
@@ -1511,11 +1512,11 @@ properties:
       enable-anchor-refs:
         type: "boolean"
         description: "Enable JSON Schema anchor references"
-        default: false
+        default: "false"
       enable-definition-refs:
         type: "boolean"
         description: "Enable JSON Schema definition references"
-        default: true
+        default: "true"
       exclude-anchors:
         type: "array"
         description: "List of classes to exclude from anchor generation"
@@ -1539,7 +1540,7 @@ properties:
       missing-type-log:
         type: "boolean"
         description: "Enable logging for missing type information"
-        default: false
+        default: "false"
       schema-id:
         type: "string"
         description: "Schema identifier urn, or url"
@@ -1555,11 +1556,11 @@ properties:
       use-openapi:
         type: "boolean"
         description: "Enable OpenAPI annotations processing"
-        default: true
+        default: "true"
       use-validation:
         type: "boolean"
         description: "Enable validation annotations processing"
-        default: true
+        default: "true"
   logging:
     type: "object"
     properties:
