@@ -6,3 +6,4 @@
 ** xref:configuration.adoc[Configuration]
 ** xref:output.adoc[Output Formats]
 ** xref:contributing.adoc[Contributing]
+** xref:CHANGELOG.adoc[Changelog]
