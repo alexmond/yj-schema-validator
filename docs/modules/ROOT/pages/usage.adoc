@@ -4,7 +4,7 @@ include::_header.adoc[]
 Basic syntax: `java -jar yj-schema-validator.jar [options] <file1> <file2> ...`
 
 [#_quick_start]
-=== Quick Start
+== Quick Start
 
 Validate a single file (assumes schema in file's `$schema`):
 
@@ -29,7 +29,7 @@ Batch with JUnit report (for CI):
 java -jar yj-schema-validator.jar *.yaml --schema=schema.json --report-type=junit --report-file-name=report.xml
 ----
 [#_ci_cd_integration_example_github_actions]
-=== CI/CD Integration Example (GitHub Actions)
+== CI/CD Integration Example (GitHub Actions)
 
 [source,yaml,subs=+attributes]
 ----
