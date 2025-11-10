@@ -27,7 +27,7 @@
 
         <jacoco.agent.arg>-javaagent:${settings.localRepository}/org/jacoco/org.jacoco.agent/${jacoco-maven-plugin.version}/org.jacoco.agent-${jacoco-maven-plugin.version}-runtime.jar=destfile=target/jacoco.exec</jacoco.agent.arg>
     </properties>
-    <url>https://alexmond.github.io/</url>
+    <url>https://www.alexmond.org/</url>
     <description>A Java command line utility for validating YAML/JSON files against JSON schemas, built with Spring
         Boot.
     </description>

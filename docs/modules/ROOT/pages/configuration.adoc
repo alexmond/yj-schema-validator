@@ -58,8 +58,8 @@ include::_header.adoc[]
 Same options can be used in a config file **yj-schema-validator.yaml**
 
 .Schema files for config files:
-* link:https://alexmond.github.io/yj-schema-validator/current/_attachments/yj-schema-validator-config.yaml[YAML Schema^]
-* link:https://alexmond.github.io/yj-schema-validator/current/_attachments/yj-schema-validator-config.json[JSON Schema^]
+* link:https://www.alexmond.org/yj-schema-validator/current/_attachments/yj-schema-validator-config.yaml[YAML Schema^]
+* link:https://www.alexmond.org/yj-schema-validator/current/_attachments/yj-schema-validator-config.json[JSON Schema^]
 
 Example config file
 

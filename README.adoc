@@ -194,4 +194,4 @@ Licensed under link:LICENSE[Apache 2.0 License].
 
 == Full Documentation
 
-link:https://alexmond.github.io/yj-schema-validator/current/index.html[Read the full docs here]
+link:https://www.alexmond.org/yj-schema-validator/current/index.html[Read the full docs here]
