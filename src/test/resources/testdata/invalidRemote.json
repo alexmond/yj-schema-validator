@@ -1,5 +1,5 @@
 {
-  "$schema": "https://www.alexmond.org/spring-boot-config-json-schema-starter/current/_attachments/bad.json",
+  "$schema": "https://www.alexmond.org/spring-boot-config-json-schema-starter/current/bad.json",
   "spring": {
     "profiles": {
       "active": "test"

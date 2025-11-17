@@ -83,6 +83,7 @@ public class YamlSchemaValidatorRunner implements ApplicationRunner {
             case JSON -> filesOutput.toJsonString();
             case YAML -> filesOutput.toYamlString();
             case JUNIT -> filesOutput.toJunitString();
+            case SARIF -> filesOutput.toSarifString();
             default -> filesOutput.toColoredString(config.isColor());
         };
 

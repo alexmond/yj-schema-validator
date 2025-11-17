@@ -145,4 +145,13 @@ public class FilesOutput {
         return junitOutput.toJunitString();
     }
 
+    /**
+     * Converts the validation results to SARIF JSON format.
+     *
+     * @return SARIF JSON string representation of the validation results
+     */
+    public String toSarifString() {
+        FilesOutputToSarif sarifOutput = new FilesOutputToSarif(files);
+        return sarifOutput.toSarifString();
+    }
 }

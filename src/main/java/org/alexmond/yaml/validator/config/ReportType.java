@@ -19,5 +19,9 @@ public enum ReportType {
     /**
      * JUnit XML format report
      */
-    JUNIT
+    JUNIT,
+    /**
+     * Sarif format report
+     */
+    SARIF
 }

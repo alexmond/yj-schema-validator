@@ -1,4 +1,4 @@
-$schema: "https://www.alexmond.org/spring-boot-config-json-schema-starter/current/_attachments/boot-generic-config.json"
+$schema: "https://www.alexmond.org/spring-boot-config-json-schema-starter/current/boot-generic-config.json"
 spring:
   profiles:
     active:

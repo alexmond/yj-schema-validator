@@ -1,7 +1,9 @@
 package org.alexmond.yaml.validator.output;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.networknt.schema.output.OutputUnit;
 import lombok.RequiredArgsConstructor;
 import org.alexmond.yaml.validator.output.junit.Failure;
@@ -9,6 +11,9 @@ import org.alexmond.yaml.validator.output.junit.Testcase;
 import org.alexmond.yaml.validator.output.junit.Testsuite;
 import org.alexmond.yaml.validator.output.junit.Testsuites;
 
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
+import java.io.StringWriter;
 import java.util.Map;
 
 /**
@@ -38,8 +43,9 @@ public class FilesOutputToJunit {
                 .build();
 
         try {
-            ObjectMapper xmlMapper = new XmlMapper();
-            xmlMapper.enable(com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT);
+            XmlMapper xmlMapper = new XmlMapper();
+            xmlMapper.enable(SerializationFeature.INDENT_OUTPUT);
+            xmlMapper.enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION);
             return xmlMapper.writeValueAsString(testsuites);
         } catch (Exception e) {
             throw new RuntimeException("Error converting to JUnit XML", e);

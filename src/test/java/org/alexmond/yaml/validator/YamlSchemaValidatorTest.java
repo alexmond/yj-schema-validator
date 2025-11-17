@@ -34,7 +34,7 @@ public class YamlSchemaValidatorTest {
     @CsvSource({
             "valid.yaml,src/test/resources/testdata/sample-schema.json",
             "valid.yaml,src/test/resources/testdata/sample-schema.yaml",
-            "valid.yaml,https://www.alexmond.org/spring-boot-config-json-schema-starter/current/_attachments/boot-generic-config.json",
+            "valid.yaml,https://www.alexmond.org/spring-boot-config-json-schema-starter/current/boot-generic-config.json",
             "valid.yaml,",
             "valid.json,",
             "remoteValid.yaml,"
@@ -50,7 +50,7 @@ public class YamlSchemaValidatorTest {
     @ParameterizedTest
     @CsvSource({
             "validNoSchema.yaml,src/test/resources/testdata/missing-schema.yaml,NoSuchFileException",
-            "validNoSchema.yaml,https://www.alexmond.org/spring-boot-config-json-schema-starter/current/_attachments/missing.json,HTTP request failed with status code 404",
+            "validNoSchema.yaml,https://www.alexmond.org/spring-boot-config-json-schema-starter/current/missing.json,HTTP request failed with status code 404",
             "missingfile.yaml,,NoSuchFileException",
             "empty.yaml,,No schema found in YAML file or provided as parameter",
             "badformat.yaml,,MarkedYAMLException",
