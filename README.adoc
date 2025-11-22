@@ -1,4 +1,4 @@
-:version: 1.0.1
+:version: 1.0.3
 = YJ Schema Validator
 
 image:https://img.shields.io/maven-central/v/org.alexmond/yj-schema-validator.svg?label=Maven%20Central[Maven Central,link=https://search.maven.org/artifact/yj-schema-validator]
