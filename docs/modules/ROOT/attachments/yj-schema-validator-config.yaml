@@ -1577,6 +1577,12 @@ properties:
         type: "string"
         description: "Location of the logging configuration file. For instance, `classpath:logback.xml`\
           \ for Logback."
+      console:
+        type: "object"
+        properties:
+          enabled:
+            type: "boolean"
+            description: "Whether to enable console-based logging."
       exception-conversion-word:
         type: "string"
         description: "Conversion word used when logging exceptions."
@@ -1592,6 +1598,7 @@ properties:
             default: false
             x-deprecation:
               replacement: "logging.logback.rollingpolicy.clean-history-on-start"
+              since: "2.4.0"
           max-history:
             type: "integer"
             description: "Maximum number of archive log files to keep. Only supported\
@@ -1600,6 +1607,7 @@ properties:
             default: 7
             x-deprecation:
               replacement: "logging.logback.rollingpolicy.max-history"
+              since: "2.4.0"
           max-size:
             type: "string"
             description: "Maximum log file size. Only supported with the default logback\
@@ -1608,6 +1616,7 @@ properties:
             default: "10MB"
             x-deprecation:
               replacement: "logging.logback.rollingpolicy.max-file-size"
+              since: "2.4.0"
           name:
             type: "string"
             description: "Log file name (for instance, `myapp.log`). Names can be\
@@ -1623,6 +1632,7 @@ properties:
             default: "0B"
             x-deprecation:
               replacement: "logging.logback.rollingpolicy.total-size-cap"
+              since: "2.4.0"
       group:
         type: "object"
         description: "Log groups to quickly change multiple loggers at the same time.\
@@ -1710,6 +1720,7 @@ properties:
             default: "${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz"
             x-deprecation:
               replacement: "logging.logback.rollingpolicy.file-name-pattern"
+              since: "2.4.0"
       register-shutdown-hook:
         type: "boolean"
         description: "Register a shutdown hook for the logging system when it is initialized.\
@@ -1920,71 +1931,6 @@ properties:
             description: "Timeout for the shutdown of any phase (group of SmartLifecycle\
               \ beans with the same 'phase' value)."
             default: "30s"
-      sql:
-        type: "object"
-        properties:
-          init:
-            type: "object"
-            $anchor: "org.springframework.boot.autoconfigure.sql.init.SqlInitializationProperties"
-            properties:
-              continue-on-error:
-                type: "boolean"
-                description: "Whether initialization should continue when an error\
-                  \ occurs."
-                default: false
-              data-locations:
-                type: "array"
-                description: "Locations of the data (DML) scripts to apply to the\
-                  \ database."
-                items:
-                  type: "string"
-              enabled:
-                type: "boolean"
-                description: "Whether basic script-based initialization of an SQL\
-                  \ database is enabled."
-                deprecated: true
-                default: true
-                x-deprecation:
-                  replacement: "spring.sql.init.mode"
-                  level: "WARNING"
-              encoding:
-                $ref: "#/$defs/java.nio.charset.Charset"
-                description: "Encoding of the schema and data scripts."
-              mode:
-                type: "string"
-                description: "Mode to apply when determining whether initialization\
-                  \ should be performed."
-                default: "embedded"
-                enum:
-                - "always"
-                - "never"
-                - "EMBEDDED"
-                - "NEVER"
-                - "ALWAYS"
-                - "embedded"
-              password:
-                type: "string"
-                description: "Password of the database to use when applying initialization\
-                  \ scripts (if different)."
-              platform:
-                type: "string"
-                description: "Platform to use in the default schema or data script\
-                  \ locations, schema-${platform}.sql and data-${platform}.sql."
-                default: "all"
-              schema-locations:
-                type: "array"
-                description: "Locations of the schema (DDL) scripts to apply to the\
-                  \ database."
-                items:
-                  type: "string"
-              separator:
-                type: "string"
-                description: "Statement separator in the schema and data scripts."
-                default: ";"
-              username:
-                type: "string"
-                description: "Username of the database to use when applying initialization\
-                  \ scripts (if different)."
       ssl:
         type: "object"
         $anchor: "org.springframework.boot.autoconfigure.ssl.SslProperties"
@@ -2103,6 +2049,11 @@ properties:
                 type: "object"
                 $anchor: "org.springframework.boot.autoconfigure.task.TaskExecutionProperties:Simple"
                 properties:
+                  cancel-remaining-tasks-on-close:
+                    type: "boolean"
+                    description: "Whether to cancel remaining tasks on close. Only\
+                      \ recommended if threads are commonly expected to be stuck."
+                    default: false
                   concurrency-limit:
                     type: "integer"
                     description: "Set the maximum number of parallel accesses allowed.\
