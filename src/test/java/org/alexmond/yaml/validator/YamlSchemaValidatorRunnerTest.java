@@ -163,14 +163,17 @@ class YamlSchemaValidatorRunnerTest {
             "valid.yaml,YAML,test1.yaml,validyaml.yaml,true",
             "valid.yaml,JUNIT,test1.xml,validyaml.xml,true",
             "valid.yaml,TEXT,test1.txt,validyaml.txt,true",
+            "valid.yaml,SARIF,validyaml.sarif,validyaml.sarif,true",
             "multi3invalid.yaml,JSON,test1.json,multi3invalidyaml.json,false",
             "multi3invalid.yaml,YAML,test1.yaml,multi3invalidyaml.yaml,false",
             "multi3invalid.yaml,JUNIT,test1.xml,multi3invalidyaml.xml,false",
             "multi3invalid.yaml,TEXT,test1.txt,multi3invalidyaml.txt,false",
+            "multi3invalid.yaml,SARIF,multi3invalidyaml.sarif,multi3invalidyaml.sarif,false",
             "invalid.yaml,JSON,test1.json,invalidyaml.json,false",
             "invalid.yaml,YAML,test1.yaml,invalidyaml.yaml,false",
             "invalid.yaml,JUNIT,test1.xml,invalidyaml.xml,false",
-            "invalid.yaml,TEXT,test1.txt,invalidyaml.txt,false",
+            "invalid.yaml,TEXT,invalidyaml.txt,invalidyaml.txt,false",
+            "invalid.yaml,SARIF,test1.sarif,invalidyaml.sarif,false",
     })
     void fullTestWithReport(String fileName,String reportType,String reportFile,String expectedReport,String valid) {
         YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
@@ -239,17 +242,24 @@ class YamlSchemaValidatorRunnerTest {
      * @param path2 Path to the second file
      * @return true if files are identical, false otherwise or if files cannot be read
      */
+
     public boolean compareFiles(String path1, String path2) {
         try {
-            byte[] bytes1 = Files.readAllBytes(Paths.get(path1));
-            byte[] bytes2 = Files.readAllBytes(Paths.get(path2));
-            return Arrays.equals(bytes1, bytes2);
+            String content1 = new String(Files.readAllBytes(Paths.get(path1)));
+            String content2 = new String(Files.readAllBytes(Paths.get(path2)));
+
+            // Remove timestamps before comparison in sarif files
+            content1 = content1.replaceAll("\"startTimeUtc\"\\s*:\\s*\"[^\"]*\"", "\"startTimeUtc\":\"\"");
+            content1 = content1.replaceAll("\"endTimeUtc\"\\s*:\\s*\"[^\"]*\"", "\"endTimeUtc\":\"\"");
+            content2 = content2.replaceAll("\"startTimeUtc\"\\s*:\\s*\"[^\"]*\"", "\"startTimeUtc\":\"\"");
+            content2 = content2.replaceAll("\"endTimeUtc\"\\s*:\\s*\"[^\"]*\"", "\"endTimeUtc\":\"\"");
+
+            return content1.equals(content2);
         } catch (IOException e) {
             // Handles cases where files don't exist or can't be read
             return false;
         }
     }
-    
 
     /**
      * Test to verify that Validate() method processes invalid YAML files and returns invalid output.

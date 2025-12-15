@@ -43,7 +43,7 @@ public class YamlSchemaValidator {
     private final YamlSchemaValidatorConfig config;
     private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
     private final ObjectMapper jsonMapper = new ObjectMapper();
-    Map<String, JsonSchema> schemaCache = new HashMap<>();
+    Map<String, Schema> schemaCache = new HashMap<>();
 
     /**
      * Validates a YAML file against a JSON Schema.
@@ -89,16 +89,9 @@ public class YamlSchemaValidator {
             if (schemaPath == null) {
                 return genericError("No schema found in YAML file or provided as parameter");
             } else {
-                JsonSchema schema = getSchemaByPath(schemaPath);
+                Schema schema = getSchemaByPath(schemaPath);
                 schema.initializeValidators();
-                return schema.validate(fileNode.toString(), InputFormat.JSON, OutputFormat.LIST,
-                        executionContext -> {
-                            executionContext.getExecutionConfig().setFormatAssertionsEnabled(true);
-                            executionContext.getExecutionConfig().setAnnotationCollectionEnabled(true);
-                        });
-
-
-
+                return schema.validate(fileNode.toString(), InputFormat.JSON, OutputFormat.LIST);
             }
 //            SchemaRegistryConfig config = SchemaRegistryConfig.builder()
 //                    .formatAssertionsEnabled(true)  // Treat format failures as errors
@@ -135,7 +128,7 @@ public class YamlSchemaValidator {
      * @return JsonSchema instance for validation
      * @throws YamlValidationException if schema cannot be loaded or parsed
      */
-    private JsonSchema getSchemaByPath(String schemaPath) {
+    private Schema getSchemaByPath(String schemaPath) {
         if (schemaCache.containsKey(schemaPath)) {
             return schemaCache.get(schemaPath);
         }
@@ -144,12 +137,16 @@ public class YamlSchemaValidator {
         JsonNode schemaNode = getSchemaYamlJsonNode(schemaPath, schemaString);
 
 //         Step 3: Determine schema version from $schema
-        JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(getSchemaVersion(schemaNode));
+        SchemaRegistryConfig config = SchemaRegistryConfig.builder()
+                .formatAssertionsEnabled(true)
+                .build();
+
+        SchemaRegistry schemaRegistry = SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12,
+                builder -> builder.schemaRegistryConfig(config));
 
         // Step 4: Create JsonSchema and cache
-        JsonSchema schema = schemaFactory.getSchema(schemaNode);
+        Schema schema = schemaRegistry.getSchema(SchemaLocation.of(schemaPath),schemaNode);
         schemaCache.put(schemaPath, schema);
-
         return schema;
     }
 
@@ -164,23 +161,6 @@ public class YamlSchemaValidator {
         outputUnit.setValid(false);
         outputUnit.setErrors(Map.of("error", message));
         return outputUnit;
-    }
-
-    /**
-     * Detects the JSON Schema version from the schema node.
-     * Falls back to V202012 if version cannot be detected.
-     *
-     * @param schemaNode JSON node containing the schema
-     * @return Detected schema version or default version if detection fails
-     */
-    public SpecVersion.VersionFlag getSchemaVersion(JsonNode schemaNode) {
-        SpecVersion.VersionFlag defaultVersion = SpecVersion.VersionFlag.V202012;
-        try {
-            return SpecVersionDetector.detect(schemaNode);
-        } catch (JsonSchemaException e) {
-            log.warn("Error detecting schema version: {}, setting default to {}", e.getMessage(), defaultVersion);
-            return defaultVersion;
-        }
     }
 
     /**

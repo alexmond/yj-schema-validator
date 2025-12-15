@@ -1,12 +1,8 @@
 package org.alexmond.yaml.validator;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.SpecVersion;
 import com.networknt.schema.output.OutputUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.converter.ConvertWith;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -97,24 +93,5 @@ public class YamlSchemaValidatorTest {
             assertEquals(outputUnit.isValid(), valid[index]);
             index++;
         }
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-            "'{\"$schema\": \"https://json-schema.org/draft-04/schema#\"}', V4",
-            "'{\"$schema\": \"https://json-schema.org/draft-06/schema#\"}', V6",
-            "'{\"$schema\": \"https://json-schema.org/draft-07/schema#\"}', V7",
-            "'{\"$schema\": \"https://json-schema.org/draft/2019-09/schema\"}', V201909",
-            "'{\"$schema\": \"https://json-schema.org/draft/2020-12/schema\"}', V202012",
-            "'{}', V202012",
-            "'{\"$schema\": \"https://unsupported-schema.org\"}', V202012"
-    })
-    void testGetSchemaVersion(String schemaJson, String expectedVersion) throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode schemaNode = objectMapper.readTree(schemaJson);
-
-        SpecVersion.VersionFlag version = yamlSchemaValidator.getSchemaVersion(schemaNode);
-
-        assertEquals(SpecVersion.VersionFlag.valueOf(expectedVersion), version);
     }
 }

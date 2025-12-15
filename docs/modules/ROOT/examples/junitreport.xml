@@ -5,7 +5,7 @@
                 <failure/>
             </testcase>
             <testcase classname="files" name="src/test/resources/invalid.yaml" time="0.0">
-                <failure message="Type Mismatch at $.sample.boolean-sample">integer found, boolean expected</failure>
+                <failure message="Type Mismatch at /sample/boolean-sample">integer found, boolean expected</failure>
             </testcase>
         </testcase>
     </testsuite>
