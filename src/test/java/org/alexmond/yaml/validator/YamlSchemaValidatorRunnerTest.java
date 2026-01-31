@@ -76,6 +76,34 @@ class YamlSchemaValidatorRunnerTest {
     }
 
     /**
+     * Test to verify that Validate() method works with stdin when no files are provided.
+     */
+    @Test
+    void testValidateWithStdinNoFiles() {
+        YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
+        YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
+        Environment environment = mock(Environment.class);
+
+        when(config.getReportType()).thenReturn(ReportType.TEXT);
+        when(config.isColor()).thenReturn(false);
+
+        YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
+
+        ApplicationArguments args = mock(ApplicationArguments.class);
+        when(args.getNonOptionArgs()).thenReturn(Collections.emptyList());
+        
+        OutputUnit outputUnit = new OutputUnit();
+        outputUnit.setValid(true);
+        when(yamlSchemaValidator.validate(any(), eq("stdin"), any())).thenReturn(Collections.singletonMap("stdin", outputUnit));
+
+        FilesOutput result = runner.Validate(args);
+
+        assertNotNull(result, "Expected result not to be null when using stdin");
+        assertTrue(result.isValid(), "Expected result to be valid from stdin");
+        verify(yamlSchemaValidator).validate(any(), eq("stdin"), any());
+    }
+
+    /**
      * Test to verify that Validate() method returns null and displays appropriate message
      * when no YAML/JSON files are provided as arguments.
      */
@@ -85,16 +113,17 @@ class YamlSchemaValidatorRunnerTest {
         YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
         Environment environment = mock(Environment.class);
 
+        when(config.getReportType()).thenReturn(ReportType.TEXT);
+        when(config.isColor()).thenReturn(false);
+
         YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
 
         ApplicationArguments args = mock(ApplicationArguments.class);
+        when(args.getNonOptionArgs()).thenReturn(Collections.emptyList());
 
         FilesOutput result = runner.Validate(args);
 
-        assertNull(result, "Expected result to be null when '--help' option is passed");
-        verify(args, times(1)).containsOption("help");
-        String expected = "At least one YAML/JSON file must be provided as a non-option argument";
-        assertTrue(outContent.toString().contains(expected), "Output should contain:" + expected);
+        assertNotNull(result, "Expected result not to be null as it should fall back to stdin");
     }
 
     /**
