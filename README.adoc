@@ -47,7 +47,9 @@ java -jar target/yj-schema-validator-{version}.jar --help
 
 == Usage
 
-Basic syntax: `java -jar yj-schema-validator.jar [options] <file1> <file2> ...`
+Basic syntax: `java -jar yj-schema-validator.jar [options] [<file1> <file2> ...]`
+
+If no files are provided, or if `-` is used as a filename, the tool reads from `stdin`.
 
 === Quick Start
 
@@ -58,6 +60,13 @@ Validate a single file (assumes schema in file's `$schema`):
 java -jar yj-schema-validator.jar config.yaml
 # Output: config.yaml: ok
 #         Validation Result: ok
+----
+
+Validate from `stdin`:
+
+[source,bash]
+----
+cat config.yaml | java -jar yj-schema-validator.jar --schema=schema.json
 ----
 
 With explicit schema:

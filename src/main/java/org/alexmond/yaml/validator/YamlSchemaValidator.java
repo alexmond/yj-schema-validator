@@ -16,12 +16,12 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyManagementException;
@@ -53,18 +53,38 @@ public class YamlSchemaValidator {
      * @return Map containing validation results where key is the file path and value is the validation output
      */
     public Map<String, OutputUnit> validate(String filePath, String schemaPath) {
-
-        List<JsonNode> fileNodeList;
-        try {
-            fileNodeList = getYamlJsonNode(filePath, Files.readString(Paths.get(filePath)));
-        } catch (YamlValidationException | IOException e) { // <---------- from Files.readString, line 44
-            log.debug("Error reading file", e); // TODO: fix debug messaging
+        try (InputStream is = new FileInputStream(filePath)) {
+            return validate(is, filePath, schemaPath);
+        } catch (FileNotFoundException e) {
+            log.debug("File not found", e);
+            return Map.of(filePath, genericError("NoSuchFileException: " + filePath));
+        } catch (YamlValidationException | IOException e) {
+            log.debug("Error reading file", e);
             return Map.of(filePath, genericError(e.toString()));
         }
+    }
+
+    /**
+     * Validates an InputStream against a JSON Schema.
+     *
+     * @param inputStream InputStream of the content to validate
+     * @param sourceName  Name of the source (e.g. file path or "stdin")
+     * @param schemaPath  Path to the JSON Schema file
+     * @return Map containing validation results
+     */
+    public Map<String, OutputUnit> validate(InputStream inputStream, String sourceName, String schemaPath) {
+        List<JsonNode> fileNodeList;
+        try {
+            fileNodeList = getYamlJsonNode(sourceName, inputStream);
+        } catch (YamlValidationException | IOException e) {
+            log.debug("Error reading input stream", e);
+            return Map.of(sourceName, genericError(e.toString()));
+        }
+
         return switch (fileNodeList.size()) {
-            case 0 -> Map.of(filePath, genericError("No Nodes found in YAML file"));
-            case 1 -> Map.of(filePath, validateJsonNode(filePath, schemaPath, fileNodeList.get(0)));
-            default -> validateMultipleJsonNodes(filePath, schemaPath, fileNodeList);
+            case 0 -> Map.of(sourceName, genericError("No Nodes found in YAML file"));
+            case 1 -> Map.of(sourceName, validateJsonNode(sourceName, schemaPath, fileNodeList.get(0)));
+            default -> validateMultipleJsonNodes(sourceName, schemaPath, fileNodeList);
         };
     }
 
@@ -192,13 +212,14 @@ public class YamlSchemaValidator {
      * Parses content as either JSON or YAML into a JsonNode.
      * Attempts JSON parsing first, falls back to YAML if JSON parsing fails.
      *
-     * @param filePath Path to the file being parsed (used for error reporting)
-     * @param content  String content to parse
-     * @return Parsed JsonNode
+     * @param filePath    Path to the file being parsed (used for error reporting)
+     * @param inputStream InputStream of the content to parse
+     * @return Parsed JsonNode list
      * @throws YamlValidationException if content cannot be parsed as either JSON or YAML
      */
-    private List<JsonNode> getYamlJsonNode(String filePath, String content) throws YamlValidationException, IOException {
+    private List<JsonNode> getYamlJsonNode(String filePath, InputStream inputStream) throws YamlValidationException, IOException {
         List<JsonNode> docs = new ArrayList<>();
+        byte[] content = inputStream.readAllBytes();
         try {
             return List.of(jsonMapper.readTree(content));
         } catch (JsonProcessingException e) {
@@ -280,10 +301,14 @@ public class YamlSchemaValidator {
             }
 
             return response.body();
-        } catch (IOException | InterruptedException e) { // TODO: fix debug messaging
+        } catch (IOException | InterruptedException e) {
             String msg = "Error fetching schema from URL: " + schemaPath;
-            log.error("{}, {}", msg, e.getMessage());
-            throw new YamlValidationException(e, null, schemaPath);
+            Throwable cause = e;
+            if (e instanceof IOException && e.getCause() != null) {
+                cause = e.getCause();
+            }
+            log.error("{}, {}", msg, cause.getMessage());
+            throw new YamlValidationException(cause, null, schemaPath);
         }
     }
 
@@ -332,10 +357,14 @@ public class YamlSchemaValidator {
      * @throws YamlValidationException if file cannot be read
      */
     private String readSchemaFromFile(String schemaPath) {
-        try {
-            return Files.readString(Paths.get(schemaPath));
+        try (InputStream is = new FileInputStream(schemaPath)) {
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (FileNotFoundException e) {
+            String msg = "NoSuchFileException: " + schemaPath;
+            log.error(msg);
+            throw new YamlValidationException(msg, null, schemaPath);
         } catch (IOException e) {
-            String msg = "Error reading schema file";
+            String msg = "Error reading schema from file: " + schemaPath;
             log.error("{}, {}", msg, e.getMessage());
             throw new YamlValidationException(e, null, schemaPath);
         }

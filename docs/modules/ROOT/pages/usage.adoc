@@ -1,7 +1,9 @@
 include::_header.adoc[]
 = Usage
 
-Basic syntax: `java -jar yj-schema-validator.jar [options] <file1> <file2> ...`
+Basic syntax: `java -jar yj-schema-validator.jar [options] [<file1> <file2> ...]`
+
+If no files are provided, or if `-` is used as a filename, the tool reads from `stdin`.
 
 [#_quick_start]
 == Quick Start
@@ -20,6 +22,13 @@ With explicit schema:
 [source,bash]
 ----
 java -jar yj-schema-validator.jar config.yaml --schema=schema.json
+----
+
+Validate from `stdin`:
+
+[source,bash]
+----
+cat config.yaml | java -jar yj-schema-validator.jar --schema=schema.json
 ----
 
 Batch with JUnit report (for CI):

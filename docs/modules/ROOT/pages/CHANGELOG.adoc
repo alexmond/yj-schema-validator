@@ -1,4 +1,5 @@
 include::_header.adoc[]
+- **2.0.2** Upgrade to spring boot 4.0.2, streaming and stdin support
 - **2.0.1** Upgrade to spring boot 4.0.1
 - **2.0.0** Upgrade to networknt json-schema-validator 2.0.1
 - **1.0.3** Upgrade to spring boot 4.0.0

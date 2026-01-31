@@ -66,9 +66,23 @@ public class YamlSchemaValidatorRunner implements ApplicationRunner {
         }
         Map<String, OutputUnit> allResultsl = new LinkedHashMap<>();
         List<String> files = args.getNonOptionArgs();
-        if(config.getFiles() != null && !config.getFiles().isEmpty()) {
+        if (config.getFiles() != null && !config.getFiles().isEmpty()) {
             files = config.getFiles();
         }
+
+        if (files.isEmpty() || files.contains("-")) {
+            try {
+                // If "-" is present in the middle of file list, we should probably only read from stdin once.
+                // For simplicity, if no files or "-" is present, we read from stdin.
+                var result = yamlSchemaValidator.validate(System.in, "stdin", config.getSchema());
+                allResultsl.putAll(result);
+            } catch (RuntimeException e) {
+                log.error("Unexpected error during validation of stdin", e);
+            }
+            // Remove "-" from files to avoid trying to open it as a file later
+            files.removeIf(f -> f.equals("-"));
+        }
+
         files.forEach(file -> {
             try {
                 var result = yamlSchemaValidator.validate(file, config.getSchema());
@@ -105,13 +119,15 @@ public class YamlSchemaValidatorRunner implements ApplicationRunner {
      */
     private void printHelp() {
         String helpText = """
-                Usage: java -jar yaml-schema-validator.jar [options] <file1> <file2> ...
+                Usage: java -jar yaml-schema-validator.jar [options] [<file1> <file2> ...]
                 
+                Note: If no files are provided, or if '-' is used as a filename, the tool reads from stdin.
+
                 Options:
                   --help                               Show this help message
                   --schema=<path>                      Path to the JSON schema file (required unless schema-override is false)
                   --schema-override=<true|false>       If set, uses --schema instead of $schema from YAML/JSON
-                  --report-type=<type>                 Output format: text (default), json, yaml, junit
+                  --report-type=<type>                 Output format: text (default), json, yaml, junit, sarif
                   --report-file-name=<name>            Write report to the given file (prints to stdout if not set)
                   --http-timeout=<dur>                 HTTP timeout for fetching remote schemas (e.g., 10s, 2m). Default: 10s
                   --ignore-ssl-errors=<true|false>     Ignore SSL certificate validation errors when fetching schemas
@@ -127,8 +143,6 @@ public class YamlSchemaValidatorRunner implements ApplicationRunner {
      * @return Error message if validation fails, null if validation succeeds
      */
     private String validateConfig(ApplicationArguments args) {
-        if (args.getNonOptionArgs().isEmpty() && config.getFiles().isEmpty())
-            return "At least one YAML/JSON file must be provided as a non-option argument";
         if (config.isSchemaOverride() && config.getSchema() == null) {
             return "Schema path must be provided when schemaPathOverride is enabled";
         }

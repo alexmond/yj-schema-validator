@@ -1,0 +1,28 @@
+Based on the analysis of the `yj-schema-validator` project, here are several suggested improvements categorized by their impact on performance, usability, and code quality.
+
+### 1. Performance and Scalability
+*   **Parallel File Validation**: Currently, files are validated sequentially in `YamlSchemaValidatorRunner`. For large batches of files, using Java's Parallel Streams or a `TaskExecutor` could significantly reduce total execution time.
+*   **Improved Schema Caching**: While a `schemaCache` exists in `YamlSchemaValidator`, it is a simple `HashMap`. Consider using a more robust cache (like Caffeine) with size limits or expiration policies, especially if the tool is ever used in a long-running service mode.
+*   **Avoid Repeated Schema Re-initialization**: The `schema.initializeValidators()` call is inside `validateJsonNode`. If multiple files use the same schema, this might be redundant if the initialized state isn't already cached within the `Schema` object.
+
+### 2. CLI and User Experience (UX)
+*   **Progress Indicator**: When validating a large number of files (e.g., using glob patterns like `*.yaml`), the CLI currently provides no feedback until a file is completed. Adding a progress bar (e.g., using the `jline` or `progressbar` library) would improve the UX.
+*   **Glob Pattern Support**: Explicitly supporting glob patterns (like `**/*.yaml`) in the `--files` argument or positional arguments would make batch validation easier for users.
+*   **Detailed Exit Codes**: Instead of just `0` (success) and `1` (failure), use specific exit codes for different error types (e.g., `2` for configuration errors, `3` for schema fetch errors) to allow better integration with shell scripts.
+
+### 3. Reporting and Output
+*   **SARIF Enhancement**: The SARIF output is a great feature. Improvements could include:
+*   Adding more metadata like `rule.helpUri` pointing to specific schema documentation.
+*   Ensuring `physicalLocation` is as accurate as possible by mapping Jackson's `JsonLocation` (line/column) to SARIF regions.
+*   **JUnit Detail**: Enhance the JUnit report to include the specific JSON path of the failure in the `message` or `type` attribute of the `<failure>` tag, making it easier to read in CI dashboards.
+*   **Support for STDIN**: Allow the tool to read content from `stdin` (e.g., `cat config.yaml | yj-schema-validator -s schema.json`), which is a common pattern for CLI tools.
+
+### 4. Code Quality and Robustness
+*   **Refined Exception Handling**: `YamlSchemaValidator` currently catches generic `Exception` and `RuntimeException` in several places. Creating more specific custom exceptions or handling Jackson/NetworkNT exceptions more granularly would allow for better error messages.
+*   **Input Streaming**: For very large YAML/JSON files, `Files.readString()` might cause `OutOfMemoryError`. Switching to `InputStream` and using Jackson's streaming API would be more memory-efficient.
+*   **Configuration Validation**: Use Jakarta Bean Validation (`@NotNull`, `@Min`, etc.) on the `YamlSchemaValidatorConfig` bean to catch configuration issues earlier and more declaratively.
+*   **Dependency Audit**: Ensure that `jakarta.validation-api` (which is currently `scope: test`) is properly integrated if used for production configuration validation.
+
+### 5. Documentation & CI/CD
+*   **Docker Image**: Providing a official Docker image (e.g., `alexmond/yj-schema-validator`) would make it trivial to use in CI/CD pipelines without requiring a local Java installation.
+*   **Schema Catalog Integration**: Support a "schema catalog" configuration (similar to XML catalogs) to map certain file patterns to local schema files automatically, reducing the need for explicit `--schema` flags.

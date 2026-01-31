@@ -12,7 +12,7 @@ include::_header.adoc[]
 |`--help`
 
 |`--files`
-|Array of file paths to validate against the schema. Can contain both YAML and JSON files. Positional args also supported.
+|Array of file paths to validate against the schema. Can contain both YAML and JSON files. Positional args also supported. If no files are provided, or if `-` is used as a filename, the tool reads from `stdin`.
 |N/A
 |`--files=app.yaml` or `"app.yaml,config.json"`
 

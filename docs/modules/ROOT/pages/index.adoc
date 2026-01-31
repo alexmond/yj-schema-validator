@@ -11,6 +11,7 @@ YJ Schema Validator is a lightweight Java CLI tool for validating YAML and JSON 
 - *Dual Format Support*: Validates YAML *and* JSON files seamlessly.
 - *Remote Schemas*: Fetch via HTTP/HTTPS (with timeout & SSL options).
 - *Flexible Outputs*: Console (colored), JSON, YAML, JUnit (alpha) for CI.
+- *STDIN Support*: Pipe content directly to the validator using `stdin` or `-` filename.
 - *Batch Processing*: Multiple files; exits 0/1 for success/failure.
 - *Schema Override*: Ignore embedded `$schema`.
 - Java 17+; fat JAR ready.
