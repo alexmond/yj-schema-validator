@@ -1,10 +1,11 @@
 package org.alexmond.yaml.validator.output;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.networknt.schema.output.OutputUnit;
 import lombok.RequiredArgsConstructor;
 import org.alexmond.yaml.validator.output.sarif.*;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -34,9 +35,10 @@ public class FilesOutputToSarif {
                 .build();
 
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-            return objectMapper.writeValueAsString(sarifReport);
+            JsonMapper jsonMapper = JsonMapper.builder()
+                    .configure(SerializationFeature.INDENT_OUTPUT, true)
+                    .build();
+            return jsonMapper.writeValueAsString(sarifReport);
         } catch (Exception e) {
             throw new RuntimeException("Error converting to SARIF JSON", e);
         }

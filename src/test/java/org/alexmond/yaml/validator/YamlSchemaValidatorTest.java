@@ -49,7 +49,7 @@ public class YamlSchemaValidatorTest {
             "validNoSchema.yaml,https://www.alexmond.org/spring-boot-config-json-schema-starter/current/missing.json,HTTP request failed with status code 404",
             "missingfile.yaml,,NoSuchFileException",
             "empty.yaml,,No schema found in YAML file or provided as parameter",
-            "badformat.yaml,,MarkedYAMLException",
+            "badformat.yaml,,JacksonYAMLParseException",
             "invalidRemote.json,,HTTP request failed with status code 404 for"
     })
     void testYamlValidationError(String yamlPath, String schemaPath, String error) {
@@ -58,7 +58,9 @@ public class YamlSchemaValidatorTest {
         OutputUnit outputUnit = outputUnitMap.values().iterator().next();
         assertFalse(outputUnit.isValid());
         log.error("Yaml validation error: {}", outputUnit.getErrors());
-        assertTrue(outputUnitMap.containsKey(testDataDir+yamlPath) && ((String) outputUnit.getErrors().get("error")).contains(error));
+        assertTrue(outputUnitMap.containsKey(testDataDir+yamlPath) &&
+            outputUnit.getErrors().get("error") != null &&
+            outputUnit.getErrors().get("error").toString().contains(error));
     }
 
     @ParameterizedTest
@@ -86,11 +88,13 @@ public class YamlSchemaValidatorTest {
     void testMultiDocumentYaml(String yamlPath,int numberOfDocuments,boolean[] valid) {
         Map<String, OutputUnit> sortedOutputUnitMap = new TreeMap<>();
         sortedOutputUnitMap.putAll(yamlSchemaValidator.validate(testDataDir+yamlPath, null));
-        assertEquals(sortedOutputUnitMap.size(), numberOfDocuments);
+        log.info("Test multi-doc YAML: {}, expected docs: {}, actual docs: {}, keys: {}",
+                 yamlPath, numberOfDocuments, sortedOutputUnitMap.size(), sortedOutputUnitMap.keySet());
+        assertEquals(numberOfDocuments, sortedOutputUnitMap.size());
         int index = 0;
         for (Map.Entry<String, OutputUnit> entry : sortedOutputUnitMap.entrySet()) {
             OutputUnit outputUnit = entry.getValue();
-            assertEquals(outputUnit.isValid(), valid[index]);
+            assertEquals(valid[index], outputUnit.isValid());
             index++;
         }
     }
