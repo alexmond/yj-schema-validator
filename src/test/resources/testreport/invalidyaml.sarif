@@ -1,36 +1,14 @@
 {
-  "version" : "2.1.0",
   "$schema" : "https://json.schemastore.org/sarif-2.1.0.json",
   "runs" : [ {
-    "tool" : {
-      "driver" : {
-        "name" : "YAML Schema Validator",
-        "version" : "1.0.0",
-        "informationUri" : "https://github.com/alexmond/yj-schema-validator",
-        "semanticVersion" : "1.0.0",
-        "rules" : [ {
-          "id" : "schema-validation",
-          "shortDescription" : {
-            "text" : "Schema validation error"
-          },
-          "fullDescription" : {
-            "text" : "The file does not conform to the specified JSON/YAML schema"
-          },
-          "help" : {
-            "text" : "Ensure that the file content matches the schema definition"
-          },
-          "defaultConfiguration" : {
-            "level" : "error"
-          }
-        } ]
-      }
-    },
+    "invocations" : [ {
+      "endTimeUtc" : "2026-02-21T08:47:06.439866Z",
+      "executionSuccessful" : false,
+      "exitCode" : 1,
+      "startTimeUtc" : "2026-02-21T08:47:06.439142Z"
+    } ],
     "results" : [ {
-      "ruleId" : "schema-validation",
       "level" : "error",
-      "message" : {
-        "text" : "At path '/sample/boolean-sample': integer found, boolean expected"
-      },
       "locations" : [ {
         "physicalLocation" : {
           "artifactLocation" : {
@@ -42,13 +20,35 @@
             }
           }
         }
-      } ]
+      } ],
+      "message" : {
+        "text" : "At path '/sample/boolean-sample': integer found, boolean expected"
+      },
+      "ruleId" : "schema-validation"
     } ],
-    "invocations" : [ {
-      "executionSuccessful" : false,
-      "startTimeUtc" : "2025-12-14T05:32:56.122575Z",
-      "endTimeUtc" : "2025-12-14T05:32:56.132260Z",
-      "exitCode" : 1
-    } ]
-  } ]
+    "tool" : {
+      "driver" : {
+        "informationUri" : "https://github.com/alexmond/yj-schema-validator",
+        "name" : "YAML Schema Validator",
+        "rules" : [ {
+          "defaultConfiguration" : {
+            "level" : "error"
+          },
+          "fullDescription" : {
+            "text" : "The file does not conform to the specified JSON/YAML schema"
+          },
+          "help" : {
+            "text" : "Ensure that the file content matches the schema definition"
+          },
+          "id" : "schema-validation",
+          "shortDescription" : {
+            "text" : "Schema validation error"
+          }
+        } ],
+        "semanticVersion" : "1.0.0",
+        "version" : "1.0.0"
+      }
+    }
+  } ],
+  "version" : "2.1.0"
 }

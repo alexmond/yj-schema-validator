@@ -1,9 +1,9 @@
 package org.alexmond.yaml.validator.output.junit;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 
 /**
@@ -12,7 +12,6 @@ import lombok.Data;
  * This class is used for serialization of test results into XML format
  * compatible with JUnit report specifications.
  */
-@JacksonXmlRootElement(localName = "testcase")
 @Data
 @Builder
 public class Testcase {
@@ -42,6 +41,7 @@ public class Testcase {
      * The failure details if the test case failed.
      * Null if the test case passed.
      */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JacksonXmlProperty(localName = "failure")
     private Failure failure;
 }
