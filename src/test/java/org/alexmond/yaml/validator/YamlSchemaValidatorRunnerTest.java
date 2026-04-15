@@ -6,6 +6,7 @@ import com.networknt.schema.output.OutputUnit;
 import org.alexmond.yaml.validator.config.ReportType;
 import org.alexmond.yaml.validator.config.YamlSchemaValidatorConfig;
 import org.alexmond.yaml.validator.output.FilesOutput;
+import org.alexmond.yaml.validator.util.XmlCompareUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -223,7 +224,7 @@ class YamlSchemaValidatorRunnerTest {
         }else{
             assertFalse(result.isValid(), "Expected result to be not valid for the provided file");
         }
-        assertTrue(compareFiles(reportFile,reportsDir + expectedReport), "Reports should match");
+        assertTrue(XmlCompareUtil.compareFiles(reportFile,reportsDir + expectedReport), "Reports should match");
 
     }
 
@@ -260,35 +261,10 @@ class YamlSchemaValidatorRunnerTest {
         }else{
             assertFalse(result.isValid(), "Expected result to be not valid for the provided file");
         }
-        assertTrue(compareFiles(reportFile,reportsDir + expectedReport), "Reports should match");
+        assertTrue(XmlCompareUtil.compareFiles(reportFile,reportsDir + expectedReport), "Reports should match");
 
     }
 
-    /**
-     * Compares two files byte by byte to check if they are identical.
-     *
-     * @param path1 Path to the first file
-     * @param path2 Path to the second file
-     * @return true if files are identical, false otherwise or if files cannot be read
-     */
-
-    public boolean compareFiles(String path1, String path2) {
-        try {
-            String content1 = new String(Files.readAllBytes(Paths.get(path1)));
-            String content2 = new String(Files.readAllBytes(Paths.get(path2)));
-
-            // Remove timestamps before comparison in sarif files
-            content1 = content1.replaceAll("\"startTimeUtc\"\\s*:\\s*\"[^\"]*\"", "\"startTimeUtc\":\"\"");
-            content1 = content1.replaceAll("\"endTimeUtc\"\\s*:\\s*\"[^\"]*\"", "\"endTimeUtc\":\"\"");
-            content2 = content2.replaceAll("\"startTimeUtc\"\\s*:\\s*\"[^\"]*\"", "\"startTimeUtc\":\"\"");
-            content2 = content2.replaceAll("\"endTimeUtc\"\\s*:\\s*\"[^\"]*\"", "\"endTimeUtc\":\"\"");
-
-            return content1.equals(content2);
-        } catch (IOException e) {
-            // Handles cases where files don't exist or can't be read
-            return false;
-        }
-    }
 
     /**
      * Test to verify that Validate() method processes invalid YAML files and returns invalid output.

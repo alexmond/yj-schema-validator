@@ -1,9 +1,5 @@
 package org.alexmond.yaml.validator;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.networknt.schema.*;
 import com.networknt.schema.output.OutputUnit;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.alexmond.yaml.validator.config.YamlSchemaValidatorConfig;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
@@ -41,8 +42,8 @@ import java.util.*;
 public class YamlSchemaValidator {
     private static final int HTTP_SUCCESS_STATUS = 200;
     private final YamlSchemaValidatorConfig config;
-    private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
-    private final ObjectMapper jsonMapper = new ObjectMapper();
+    private final YAMLMapper yamlMapper = YAMLMapper.builder().build();
+    private final JsonMapper jsonMapper = JsonMapper.builder().build();
     Map<String, Schema> schemaCache = new HashMap<>();
 
     /**
@@ -196,11 +197,11 @@ public class YamlSchemaValidator {
         JsonNode jsonNode;
         try {
             return jsonMapper.readTree(content);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.debug("Error parsing schema as JSON, trying YAML: {}, {}", filePath, e.getMessage());
             try {
                 jsonNode = yamlMapper.readTree(content);
-            } catch (JsonProcessingException ex) {
+            } catch (JacksonException ex) {
                 log.debug("Error parsing schema as YAML: {}, {}", filePath, ex.getMessage());
                 throw new YamlValidationException(ex, null, filePath);
             }
@@ -222,14 +223,16 @@ public class YamlSchemaValidator {
         byte[] content = inputStream.readAllBytes();
         try {
             return List.of(jsonMapper.readTree(content));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.debug("Error parsing file as JSON, trying YAML: {}, {}", filePath, e.getMessage());
-            try (var parser = yamlMapper.createParser(content)) {
-                while (parser.nextToken() != null) {
-                    JsonNode doc = yamlMapper.readTree(parser);
-                    if (doc != null && !doc.isMissingNode()) docs.add(doc);
-                }
-            } catch (JsonProcessingException ex) {
+            try {
+                // Jackson 3 approach: use readValues() for multi-document YAML
+                docs = yamlMapper.readValues(
+                    yamlMapper.createParser(content),
+                    JsonNode.class
+                ).readAll();
+                log.debug("Parsed {} YAML documents from {}", docs.size(), filePath);
+            } catch (JacksonException ex) {
                 log.debug("Error parsing file as YAML: {}, {}", filePath, ex.getMessage());
                 throw new YamlValidationException(ex, null, filePath);
             }
@@ -247,11 +250,11 @@ public class YamlSchemaValidator {
      */
     private String getSchemaPathFromNode(String yamlPath, JsonNode jsonNode) {
         JsonNode yamlSchemaNode = jsonNode.get("$schema");
-        if (yamlSchemaNode == null || !StringUtils.hasLength(yamlSchemaNode.asText())) {
+        if (yamlSchemaNode == null || !StringUtils.hasLength(yamlSchemaNode.textValue())) {
             return null;
         }
 
-        String detectedSchemaPath = yamlSchemaNode.asText();
+        String detectedSchemaPath = yamlSchemaNode.textValue();
         log.debug("Using schema URL from YAML: {}", detectedSchemaPath);
         if (!isHttpUrl(detectedSchemaPath)) {
             detectedSchemaPath = new File(new File(yamlPath).getParentFile(), detectedSchemaPath).getPath();

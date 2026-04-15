@@ -1,19 +1,16 @@
 package org.alexmond.yaml.validator.output;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.networknt.schema.output.OutputUnit;
 import lombok.RequiredArgsConstructor;
 import org.alexmond.yaml.validator.output.junit.Failure;
 import org.alexmond.yaml.validator.output.junit.Testcase;
 import org.alexmond.yaml.validator.output.junit.Testsuite;
 import org.alexmond.yaml.validator.output.junit.Testsuites;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.dataformat.xml.XmlMapper;
+import tools.jackson.dataformat.xml.XmlWriteFeature;
+import tools.jackson.dataformat.xml.ser.ToXmlGenerator;
 
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamWriter;
-import java.io.StringWriter;
 import java.util.Map;
 
 /**
@@ -43,15 +40,15 @@ public class FilesOutputToJunit {
                 .build();
 
         try {
-            XmlMapper xmlMapper = new XmlMapper();
-            xmlMapper.enable(SerializationFeature.INDENT_OUTPUT);
-            xmlMapper.enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION);
+            XmlMapper xmlMapper = XmlMapper.builder()
+                    .enable(SerializationFeature.INDENT_OUTPUT)
+                    .enable(XmlWriteFeature.WRITE_XML_DECLARATION)
+                .build();
             return xmlMapper.writeValueAsString(testsuites);
         } catch (Exception e) {
             throw new RuntimeException("Error converting to JUnit XML", e);
         }
     }
-
     /**
      * Builds a test suite from the validation results.
      * Creates individual test cases for each validated file and includes failure details

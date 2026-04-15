@@ -1,6 +1,8 @@
 package org.alexmond.yaml.validator.output;
 
 import com.networknt.schema.output.OutputUnit;
+import lombok.extern.slf4j.Slf4j;
+import org.alexmond.yaml.validator.util.XmlCompareUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -18,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Test class for JUnit XML format output generation.
  * Tests the conversion of validation results to JUnit XML format.
  */
+@Slf4j
 class FilesOutputToJunitTest {
 
     @Test
@@ -90,7 +93,7 @@ class FilesOutputToJunitTest {
         // Assert
         try {
             Files.writeString(Path.of("test1junit.xml"), junitString);
-            assertTrue(compareFileToString(junitString, "src/test/resources/testreport/test1junit.xml"));
+            assertTrue(XmlCompareUtil.compareFileToString(junitString, "src/test/resources/testreport/test1junit.xml"));
         } catch (IOException e) {
             throw new RuntimeException("Failed to write JUnit XML file", e);
         }
@@ -302,19 +305,4 @@ class FilesOutputToJunitTest {
                 .contains("Second error");
     }
 
-    /**
-     * Compares JUnit XML output with expected file content.
-     *
-     * @param junitString Generated JUnit XML string
-     * @param fileName    Path to expected JUnit XML file
-     * @return true if content matches, false otherwise
-     */
-    private boolean compareFileToString(String junitString, String fileName) {
-        try {
-            String fileContent = Files.readString(Path.of(fileName));
-            return junitString.trim().equals(fileContent.trim());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read JUnit XML file", e);
-        }
-    }
 }

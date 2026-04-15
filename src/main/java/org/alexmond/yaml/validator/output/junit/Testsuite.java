@@ -1,8 +1,9 @@
 package org.alexmond.yaml.validator.output.junit;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Builder;
 import lombok.Data;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 import java.util.List;
 
@@ -65,6 +66,7 @@ public class Testsuite {
     /**
      * List of individual test cases contained in this suite
      */
+    @JacksonXmlElementWrapper(useWrapping = false)
     @JacksonXmlProperty(localName = "testcase")
     @Builder.Default
     private List<Testcase> testcases = new java.util.ArrayList<>();

@@ -4,14 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonRootName;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.networknt.schema.output.OutputUnit;
-import lombok.Builder;
 import lombok.Data;
 
 import org.springframework.boot.ansi.AnsiColor;
 import org.springframework.boot.ansi.AnsiOutput;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.util.Map;
 
@@ -112,9 +111,9 @@ public class FilesOutput {
      * @throws RuntimeException if JSON conversion fails
      */
     public String toJsonString() {
-        ObjectMapper objectMapper = new ObjectMapper();
+        JsonMapper jsonMapper = JsonMapper.builder().build();
         try {
-            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+            return jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
         } catch (Exception e) {
             throw new RuntimeException("Error converting to JSON", e);
         }
@@ -127,9 +126,9 @@ public class FilesOutput {
      * @throws RuntimeException if YAML conversion fails
      */
     public String toYamlString() {
-        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+        YAMLMapper yamlMapper = YAMLMapper.builder().build();
         try {
-            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+            return yamlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
         } catch (Exception e) {
             throw new RuntimeException("Error converting to YAML", e);
         }
