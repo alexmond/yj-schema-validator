@@ -12,10 +12,11 @@ import lombok.Data;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ReportingConfiguration {
-    
-    /**
-     * The reporting level ("warning", "error", "note", "none").
-     */
-    @JsonProperty("level")
-    private String level;
+
+	/**
+	 * The reporting level ("warning", "error", "note", "none").
+	 */
+	@JsonProperty("level")
+	private String level;
+
 }

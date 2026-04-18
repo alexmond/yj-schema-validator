@@ -15,309 +15,320 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @ActiveProfiles("test")
 class YamlSchemaValidatorRunnerTest {
-    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-    private final PrintStream originalOut = System.out;
-    private String reportsDir="src/test/resources/testreport/";
-    private String testDataDir="src/test/resources/testdata/";
 
-    @Autowired
-    private YamlSchemaValidator yamlSchemaValidatorReal;
+	private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 
-    @BeforeEach
-    void setUp() {
-        System.setOut(new PrintStream(outContent));
-    }
+	private final PrintStream originalOut = System.out;
 
-    @AfterEach
-    void tearDown() {
-        System.setOut(originalOut);
-        outContent.reset();  // Clear for next test
-    }
+	private String reportsDir = "src/test/resources/testreport/";
 
-    /**
-     * Test to verify that Validate() method returns null and doesn't proceed with validation
-     * if the "--help" option is provided.
-     */
-    @Test
-    void testValidateMethodWithHelpOption() {
-        YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
-        YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
-        Environment environment = mock(Environment.class);
+	private String testDataDir = "src/test/resources/testdata/";
 
-        YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
+	@Autowired
+	private YamlSchemaValidator yamlSchemaValidatorReal;
 
-        ApplicationArguments args = mock(ApplicationArguments.class);
-        when(args.containsOption("help")).thenReturn(true);
+	@BeforeEach
+	void setUp() {
+		System.setOut(new PrintStream(outContent));
+	}
 
-        FilesOutput result = runner.Validate(args);
+	@AfterEach
+	void tearDown() {
+		System.setOut(originalOut);
+		outContent.reset(); // Clear for next test
+	}
 
-        assertNull(result, "Expected result to be null when '--help' option is passed");
-        verify(args, times(1)).containsOption("help");
-        String expected = "Usage: java -jar yaml-schema-validator.jar";
-        assertTrue(outContent.toString().contains(expected), "Output should contain:" + expected);
-    }
+	/**
+	 * Test to verify that validate() method returns null and doesn't proceed with
+	 * validation if the "--help" option is provided.
+	 */
+	@Test
+	void testValidateMethodWithHelpOption() {
+		YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
+		YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
+		Environment environment = mock(Environment.class);
 
-    /**
-     * Test to verify that Validate() method works with stdin when no files are provided.
-     */
-    @Test
-    void testValidateWithStdinNoFiles() {
-        YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
-        YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
-        Environment environment = mock(Environment.class);
+		YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
 
-        when(config.getReportType()).thenReturn(ReportType.TEXT);
-        when(config.isColor()).thenReturn(false);
+		ApplicationArguments args = mock(ApplicationArguments.class);
+		when(args.containsOption("help")).thenReturn(true);
 
-        YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
+		FilesOutput result = runner.validate(args);
 
-        ApplicationArguments args = mock(ApplicationArguments.class);
-        when(args.getNonOptionArgs()).thenReturn(Collections.emptyList());
-        
-        OutputUnit outputUnit = new OutputUnit();
-        outputUnit.setValid(true);
-        when(yamlSchemaValidator.validate(any(), eq("stdin"), any())).thenReturn(Collections.singletonMap("stdin", outputUnit));
+		assertNull(result, "Expected result to be null when '--help' option is passed");
+		verify(args, times(1)).containsOption("help");
+		String expected = "Usage: java -jar yaml-schema-validator.jar";
+		assertTrue(outContent.toString().contains(expected), "Output should contain:" + expected);
+	}
 
-        FilesOutput result = runner.Validate(args);
+	/**
+	 * Test to verify that validate() method works with stdin when no files are provided.
+	 */
+	@Test
+	void testValidateWithStdinNoFiles() {
+		YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
+		YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
+		Environment environment = mock(Environment.class);
 
-        assertNotNull(result, "Expected result not to be null when using stdin");
-        assertTrue(result.isValid(), "Expected result to be valid from stdin");
-        verify(yamlSchemaValidator).validate(any(), eq("stdin"), any());
-    }
+		when(config.getReportType()).thenReturn(ReportType.TEXT);
+		when(config.isColor()).thenReturn(false);
 
-    /**
-     * Test to verify that Validate() method returns null and displays appropriate message
-     * when no YAML/JSON files are provided as arguments.
-     */
-    @Test
-    void testValidateNoFiles() {
-        YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
-        YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
-        Environment environment = mock(Environment.class);
+		YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
 
-        when(config.getReportType()).thenReturn(ReportType.TEXT);
-        when(config.isColor()).thenReturn(false);
+		ApplicationArguments args = mock(ApplicationArguments.class);
+		when(args.getNonOptionArgs()).thenReturn(Collections.emptyList());
 
-        YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
+		OutputUnit outputUnit = new OutputUnit();
+		outputUnit.setValid(true);
+		when(yamlSchemaValidator.validate(any(), eq("stdin"), any()))
+			.thenReturn(Collections.singletonMap("stdin", outputUnit));
 
-        ApplicationArguments args = mock(ApplicationArguments.class);
-        when(args.getNonOptionArgs()).thenReturn(Collections.emptyList());
+		FilesOutput result = runner.validate(args);
 
-        FilesOutput result = runner.Validate(args);
+		assertNotNull(result, "Expected result not to be null when using stdin");
+		assertTrue(result.isValid(), "Expected result to be valid from stdin");
+		verify(yamlSchemaValidator).validate(any(), eq("stdin"), any());
+	}
 
-        assertNotNull(result, "Expected result not to be null as it should fall back to stdin");
-    }
+	/**
+	 * Test to verify that validate() method returns null and displays appropriate message
+	 * when no YAML/JSON files are provided as arguments.
+	 */
+	@Test
+	void testValidateNoFiles() {
+		YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
+		YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
+		Environment environment = mock(Environment.class);
 
-    /**
-     * Test to verify that Validate() method returns null when configuration validation fails.
-     */
-    @Test
-    void testValidateMethodWithInvalidConfig() {
-        YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
-        YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
-        Environment environment = mock(Environment.class);
+		when(config.getReportType()).thenReturn(ReportType.TEXT);
+		when(config.isColor()).thenReturn(false);
 
-        when(config.isSchemaOverride()).thenReturn(true);
-        when(config.getSchema()).thenReturn(null);
+		YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
 
-        YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
+		ApplicationArguments args = mock(ApplicationArguments.class);
+		when(args.getNonOptionArgs()).thenReturn(Collections.emptyList());
 
-        ApplicationArguments args = mock(ApplicationArguments.class);
-        when(args.getNonOptionArgs()).thenReturn(List.of("file1.yaml"));
+		FilesOutput result = runner.validate(args);
 
-        FilesOutput result = runner.Validate(args);
+		assertNotNull(result, "Expected result not to be null as it should fall back to stdin");
+	}
 
-        assertNull(result, "Expected result to be null when configuration is invalid");
-        String expected = "Schema path must be provided when schemaPathOverride is enabled";
-        assertTrue(outContent.toString().contains(expected), "Output should contain:" + expected);
-    }
+	/**
+	 * Test to verify that validate() method returns null when configuration validation
+	 * fails.
+	 */
+	@Test
+	void testValidateMethodWithInvalidConfig() {
+		YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
+		YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
+		Environment environment = mock(Environment.class);
 
-    /**
-     * Test to verify that Validate() method processes validation for valid yaml files.
-     */
-    @Test
-    void testValidateMethodWithValidFiles() {
-        YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
-        YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
-        Environment environment = mock(Environment.class);
+		when(config.isSchemaOverride()).thenReturn(true);
+		when(config.getSchema()).thenReturn(null);
 
-        when(config.getSchema()).thenReturn("testdata/sample-schema.json");
-        when(config.getReportType()).thenReturn(ReportType.JSON);
-        when(config.isColor()).thenReturn(false);
+		YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
 
-        YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
+		ApplicationArguments args = mock(ApplicationArguments.class);
+		when(args.getNonOptionArgs()).thenReturn(List.of("file1.yaml"));
 
-        ApplicationArguments args = mock(ApplicationArguments.class);
-        when(args.getNonOptionArgs()).thenReturn(List.of("testdata/valid.yaml"));
-        OutputUnit outputUnit = new OutputUnit();
-        outputUnit.setValid(true);
-        when(yamlSchemaValidator.validate("testdata/valid.yaml", "testdata/sample-schema.json")).thenReturn(Collections.singletonMap("testdata/valid.yaml", outputUnit));
+		FilesOutput result = runner.validate(args);
 
-        FilesOutput result = runner.Validate(args);
+		assertNull(result, "Expected result to be null when configuration is invalid");
+		String expected = "Schema path must be provided when schemaPathOverride is enabled";
+		assertTrue(outContent.toString().contains(expected), "Output should contain:" + expected);
+	}
 
-        assertNotNull(result, "Expected result not to be null with valid files");
-        assertTrue(result.isValid(), "Expected result to be valid for the provided YAML file");
-    }
+	/**
+	 * Test to verify that validate() method processes validation for valid yaml files.
+	 */
+	@Test
+	void testValidateMethodWithValidFiles() {
+		YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
+		YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
+		Environment environment = mock(Environment.class);
 
-    /**
-     * Test validation of YAML files with different report types and expected outcomes.
-     *
-     * @param fileName       The name of the YAML file to validate
-     * @param reportType     The type of report to generate (JSON, YAML, JUNIT, TEXT)
-     * @param reportFile     The output report file name
-     * @param expectedReport The expected report file to compare against
-     * @param valid          Expected validation result ("true" or "false")
-     */
-    @ParameterizedTest
-    @CsvSource({
-            "valid.yaml,JSON,test1.json,validyaml.json,true",
-            "valid.yaml,YAML,test1.yaml,validyaml.yaml,true",
-            "valid.yaml,JUNIT,test1.xml,validyaml.xml,true",
-            "valid.yaml,TEXT,test1.txt,validyaml.txt,true",
-            "valid.yaml,SARIF,validyaml.sarif,validyaml.sarif,true",
-            "multi3invalid.yaml,JSON,test1.json,multi3invalidyaml.json,false",
-            "multi3invalid.yaml,YAML,test1.yaml,multi3invalidyaml.yaml,false",
-            "multi3invalid.yaml,JUNIT,test1.xml,multi3invalidyaml.xml,false",
-            "multi3invalid.yaml,TEXT,test1.txt,multi3invalidyaml.txt,false",
-            "multi3invalid.yaml,SARIF,multi3invalidyaml.sarif,multi3invalidyaml.sarif,false",
-            "invalid.yaml,JSON,test1.json,invalidyaml.json,false",
-            "invalid.yaml,YAML,test1.yaml,invalidyaml.yaml,false",
-            "invalid.yaml,JUNIT,test1.xml,invalidyaml.xml,false",
-            "invalid.yaml,TEXT,invalidyaml.txt,invalidyaml.txt,false",
-            "invalid.yaml,SARIF,test1.sarif,invalidyaml.sarif,false",
-    })
-    void fullTestWithReport(String fileName,String reportType,String reportFile,String expectedReport,String valid) {
-        YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
-        Environment environment = mock(Environment.class);
+		when(config.getSchema()).thenReturn("testdata/sample-schema.json");
+		when(config.getReportType()).thenReturn(ReportType.JSON);
+		when(config.isColor()).thenReturn(false);
 
-        when(config.getReportType()).thenReturn(ReportType.valueOf(reportType));
-        when(config.getReportFileName()).thenReturn(reportFile);
+		YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
 
-        YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidatorReal, environment);
+		ApplicationArguments args = mock(ApplicationArguments.class);
+		when(args.getNonOptionArgs()).thenReturn(List.of("testdata/valid.yaml"));
+		OutputUnit outputUnit = new OutputUnit();
+		outputUnit.setValid(true);
+		when(yamlSchemaValidator.validate("testdata/valid.yaml", "testdata/sample-schema.json"))
+			.thenReturn(Collections.singletonMap("testdata/valid.yaml", outputUnit));
 
-        ApplicationArguments args = mock(ApplicationArguments.class);
-        when(args.getNonOptionArgs()).thenReturn(List.of(testDataDir + fileName));
-        FilesOutput result = runner.Validate(args);
+		FilesOutput result = runner.validate(args);
 
-        assertNotNull(result, "Expected result not to be null with valid files");
-        if (valid.equals("true")) {
-            assertTrue(result.isValid(), "Expected result to be valid for the provided file");
-        }else{
-            assertFalse(result.isValid(), "Expected result to be not valid for the provided file");
-        }
-        assertTrue(XmlCompareUtil.compareFiles(reportFile,reportsDir + expectedReport), "Reports should match");
+		assertNotNull(result, "Expected result not to be null with valid files");
+		assertTrue(result.isValid(), "Expected result to be valid for the provided YAML file");
+	}
 
-    }
+	/**
+	 * Test validation of YAML files with different report types and expected outcomes.
+	 * @param fileName The name of the YAML file to validate
+	 * @param reportType The type of report to generate (JSON, YAML, JUNIT, TEXT)
+	 * @param reportFile The output report file name
+	 * @param expectedReport The expected report file to compare against
+	 * @param valid Expected validation result ("true" or "false")
+	 */
+	@ParameterizedTest
+	@CsvSource({ "valid.yaml,JSON,test1.json,validyaml.json,true", "valid.yaml,YAML,test1.yaml,validyaml.yaml,true",
+			"valid.yaml,JUNIT,test1.xml,validyaml.xml,true", "valid.yaml,TEXT,test1.txt,validyaml.txt,true",
+			"valid.yaml,SARIF,validyaml.sarif,validyaml.sarif,true",
+			"multi3invalid.yaml,JSON,test1.json,multi3invalidyaml.json,false",
+			"multi3invalid.yaml,YAML,test1.yaml,multi3invalidyaml.yaml,false",
+			"multi3invalid.yaml,JUNIT,test1.xml,multi3invalidyaml.xml,false",
+			"multi3invalid.yaml,TEXT,test1.txt,multi3invalidyaml.txt,false",
+			"multi3invalid.yaml,SARIF,multi3invalidyaml.sarif,multi3invalidyaml.sarif,false",
+			"invalid.yaml,JSON,test1.json,invalidyaml.json,false",
+			"invalid.yaml,YAML,test1.yaml,invalidyaml.yaml,false", "invalid.yaml,JUNIT,test1.xml,invalidyaml.xml,false",
+			"invalid.yaml,TEXT,invalidyaml.txt,invalidyaml.txt,false",
+			"invalid.yaml,SARIF,test1.sarif,invalidyaml.sarif,false" })
+	void fullTestWithReport(String fileName, String reportType, String reportFile, String expectedReport,
+			String valid) {
+		YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
+		Environment environment = mock(Environment.class);
 
-    /**
-     * Test validation of YAML files using configuration files instead of command line arguments.
-     *
-     * @param fileName       The name of the YAML file to validate
-     * @param reportType     The type of report to generate (JSON, YAML, JUNIT, TEXT)
-     * @param reportFile     The output report file name
-     * @param expectedReport The expected report file to compare against
-     * @param valid          Expected validation result ("true" or "false")
-     */
-    @ParameterizedTest
-    @CsvSource({
-            "valid.yaml,JSON,test1.json,validyaml.json,true",
-    })
-    void fullTestWithReportConfigFiles(String fileName,String reportType,String reportFile,String expectedReport,String valid) {
-        YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
-        Environment environment = mock(Environment.class);
+		when(config.getReportType()).thenReturn(ReportType.valueOf(reportType));
+		when(config.getReportFileName()).thenReturn(reportFile);
 
-        when(config.getReportType()).thenReturn(ReportType.valueOf(reportType));
-        when(config.getReportFileName()).thenReturn(reportFile);
+		YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidatorReal, environment);
 
-        YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidatorReal, environment);
+		ApplicationArguments args = mock(ApplicationArguments.class);
+		when(args.getNonOptionArgs()).thenReturn(List.of(testDataDir + fileName));
+		FilesOutput result = runner.validate(args);
 
-        ApplicationArguments args = mock(ApplicationArguments.class);
-        when(args.getNonOptionArgs()).thenReturn(List.of("none.yaml"));
-        when(config.getFiles()).thenReturn(List.of(testDataDir + fileName));
-        FilesOutput result = runner.Validate(args);
+		assertNotNull(result, "Expected result not to be null with valid files");
+		if (valid.equals("true")) {
+			assertTrue(result.isValid(), "Expected result to be valid for the provided file");
+		}
+		else {
+			assertFalse(result.isValid(), "Expected result to be not valid for the provided file");
+		}
+		assertTrue(XmlCompareUtil.compareFiles(reportFile, reportsDir + expectedReport), "Reports should match");
 
-        assertNotNull(result, "Expected result not to be null with valid files");
-        if (valid.equals("true")) {
-            assertTrue(result.isValid(), "Expected result to be valid for the provided file");
-        }else{
-            assertFalse(result.isValid(), "Expected result to be not valid for the provided file");
-        }
-        assertTrue(XmlCompareUtil.compareFiles(reportFile,reportsDir + expectedReport), "Reports should match");
+	}
 
-    }
+	/**
+	 * Test validation of YAML files using configuration files instead of command line
+	 * arguments.
+	 * @param fileName The name of the YAML file to validate
+	 * @param reportType The type of report to generate (JSON, YAML, JUNIT, TEXT)
+	 * @param reportFile The output report file name
+	 * @param expectedReport The expected report file to compare against
+	 * @param valid Expected validation result ("true" or "false")
+	 */
+	@ParameterizedTest
+	@CsvSource({ "valid.yaml,JSON,test1.json,validyaml.json,true" })
+	void fullTestWithReportConfigFiles(String fileName, String reportType, String reportFile, String expectedReport,
+			String valid) {
+		YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
+		Environment environment = mock(Environment.class);
 
+		when(config.getReportType()).thenReturn(ReportType.valueOf(reportType));
+		when(config.getReportFileName()).thenReturn(reportFile);
 
-    /**
-     * Test to verify that Validate() method processes invalid YAML files and returns invalid output.
-     */
-    @Test
-    void testValidateMethodWithInvalidFiles() {
-        YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
-        YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
-        Environment environment = mock(Environment.class);
+		YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidatorReal, environment);
 
-        when(config.getSchema()).thenReturn("testdata/sample-schema.json");
-        when(config.getReportType()).thenReturn(ReportType.JSON);
-        when(config.isColor()).thenReturn(false);
+		ApplicationArguments args = mock(ApplicationArguments.class);
+		when(args.getNonOptionArgs()).thenReturn(List.of("none.yaml"));
+		when(config.getFiles()).thenReturn(List.of(testDataDir + fileName));
+		FilesOutput result = runner.validate(args);
 
-        YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
+		assertNotNull(result, "Expected result not to be null with valid files");
+		if (valid.equals("true")) {
+			assertTrue(result.isValid(), "Expected result to be valid for the provided file");
+		}
+		else {
+			assertFalse(result.isValid(), "Expected result to be not valid for the provided file");
+		}
+		assertTrue(XmlCompareUtil.compareFiles(reportFile, reportsDir + expectedReport), "Reports should match");
 
-        ApplicationArguments args = mock(ApplicationArguments.class);
-        when(args.getNonOptionArgs()).thenReturn(List.of("testdata/invalid.yaml"));
+	}
 
-        OutputUnit invalidOutputUnit = new OutputUnit();
-        invalidOutputUnit.setValid(false);
+	/**
+	 * Test to verify that validate() method processes invalid YAML files and returns
+	 * invalid output.
+	 */
+	@Test
+	void testValidateMethodWithInvalidFiles() {
+		YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
+		YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
+		Environment environment = mock(Environment.class);
 
-        when(yamlSchemaValidator.validate("testdata/invalid.yaml", "testdata/sample-schema.json")).thenReturn(Collections.singletonMap("testdata/invalid.yaml", invalidOutputUnit));
+		when(config.getSchema()).thenReturn("testdata/sample-schema.json");
+		when(config.getReportType()).thenReturn(ReportType.JSON);
+		when(config.isColor()).thenReturn(false);
 
-        FilesOutput result = runner.Validate(args);
+		YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
 
-        assertNotNull(result, "Expected result not to be null with invalid files");
-        assertFalse(result.isValid(), "Expected result to be invalid for the provided YAML file");
-    }
+		ApplicationArguments args = mock(ApplicationArguments.class);
+		when(args.getNonOptionArgs()).thenReturn(List.of("testdata/invalid.yaml"));
 
-    /**
-     * Test to verify that Validate() method handles runtime exceptions during file processing.
-     */
-//    @Test
-    void testValidateMethodHandlesRuntimeException() {
-        YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
-        YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
-        Environment environment = mock(Environment.class);
+		OutputUnit invalidOutputUnit = new OutputUnit();
+		invalidOutputUnit.setValid(false);
 
-        when(config.getSchema()).thenReturn("testdata/sample-schema.json");
-        when(config.getReportType()).thenReturn(ReportType.JSON);
-        when(config.isColor()).thenReturn(false);
+		when(yamlSchemaValidator.validate("testdata/invalid.yaml", "testdata/sample-schema.json"))
+			.thenReturn(Collections.singletonMap("testdata/invalid.yaml", invalidOutputUnit));
 
-        YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
+		FilesOutput result = runner.validate(args);
 
-        ApplicationArguments args = mock(ApplicationArguments.class);
-        when(args.getNonOptionArgs()).thenReturn(List.of("error-prone.yaml"));
+		assertNotNull(result, "Expected result not to be null with invalid files");
+		assertFalse(result.isValid(), "Expected result to be invalid for the provided YAML file");
+	}
 
-        doThrow(new RuntimeException("Simulated exception")).when(yamlSchemaValidator).validate("error-prone.yaml", "testdata/sample-schema.json");
+	/**
+	 * Test to verify that validate() method handles runtime exceptions during file
+	 * processing.
+	 */
+	// @Test
+	void testValidateMethodHandlesRuntimeException() {
+		YamlSchemaValidatorConfig config = mock(YamlSchemaValidatorConfig.class);
+		YamlSchemaValidator yamlSchemaValidator = mock(YamlSchemaValidator.class);
+		Environment environment = mock(Environment.class);
 
-        FilesOutput result = runner.Validate(args);
+		when(config.getSchema()).thenReturn("testdata/sample-schema.json");
+		when(config.getReportType()).thenReturn(ReportType.JSON);
+		when(config.isColor()).thenReturn(false);
 
-        assertNotNull(result, "Expected result not to be null even if an exception is thrown during validation");
-        assertFalse(result.isValid(), "Expected result to be invalid when an exception occurs");
-    }
+		YamlSchemaValidatorRunner runner = new YamlSchemaValidatorRunner(config, yamlSchemaValidator, environment);
+
+		ApplicationArguments args = mock(ApplicationArguments.class);
+		when(args.getNonOptionArgs()).thenReturn(List.of("error-prone.yaml"));
+
+		doThrow(new RuntimeException("Simulated exception")).when(yamlSchemaValidator)
+			.validate("error-prone.yaml", "testdata/sample-schema.json");
+
+		FilesOutput result = runner.validate(args);
+
+		assertNotNull(result, "Expected result not to be null even if an exception is thrown during validation");
+		assertFalse(result.isValid(), "Expected result to be invalid when an exception occurs");
+	}
+
 }

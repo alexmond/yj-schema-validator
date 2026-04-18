@@ -15,35 +15,37 @@ import java.util.List;
 
 @Slf4j
 public class YamlProprtySourceLoaderTest {
-    private String reportsDir="src/test/resources/testreport/";
-    private String testDataDir="src/test/resources/testdata/";
 
-    @ParameterizedTest
-    @CsvSource({
-//            "src/test/resources/valid.yaml",
-            "validParam.yaml"
-    })
-    void testSnakeYamlValidation(String yamlPath) throws Exception {
+	private String reportsDir = "src/test/resources/testreport/";
 
-        Resource resource = new FileSystemResource(testDataDir+yamlPath);
-        YamlPropertySourceLoader loader = new YamlPropertySourceLoader();
-        List<PropertySource<?>> sources = loader.load("config", resource);
+	private String testDataDir = "src/test/resources/testdata/";
 
-        // Create mutable sources and add custom properties
-        MutablePropertySources mutableSources = new MutablePropertySources();
-        sources.forEach(mutableSources::addLast);  // YAML sources first
-        // Resolve placeholders
-        PropertySourcesPropertyResolver resolver = new PropertySourcesPropertyResolver(mutableSources);
-        resolver.setIgnoreUnresolvableNestedPlaceholders(true);  // Optional: Ignore nested if unresolved
+	@ParameterizedTest
+	@CsvSource({
+			// "src/test/resources/valid.yaml",
+			"validParam.yaml" })
+	void testSnakeYamlValidation(String yamlPath) throws Exception {
 
-        // Access resolved values (as if from Spring's Environment)
-        log.info("sample: {}", resolver.getProperty("sample.boolean-sample").toString());
-        log.info("sample2: {}", resolver.getProperty("sample.boolean-sample2").toString());
+		Resource resource = new FileSystemResource(testDataDir + yamlPath);
+		YamlPropertySourceLoader loader = new YamlPropertySourceLoader();
+		List<PropertySource<?>> sources = loader.load("config", resource);
 
-        JsonNode node;
-        PropertiesToJson propertiesToJson = new PropertiesToJson();
-        node = propertiesToJson.toJson(resolver, mutableSources);
-        log.info("node: {}", node.toString());
-    }
+		// Create mutable sources and add custom properties
+		MutablePropertySources mutableSources = new MutablePropertySources();
+		sources.forEach(mutableSources::addLast); // YAML sources first
+		// Resolve placeholders
+		PropertySourcesPropertyResolver resolver = new PropertySourcesPropertyResolver(mutableSources);
+		resolver.setIgnoreUnresolvableNestedPlaceholders(true); // Optional: Ignore nested
+																// if unresolved
+
+		// Access resolved values (as if from Spring's Environment)
+		log.info("sample: {}", resolver.getProperty("sample.boolean-sample").toString());
+		log.info("sample2: {}", resolver.getProperty("sample.boolean-sample2").toString());
+
+		JsonNode node;
+		PropertiesToJson propertiesToJson = new PropertiesToJson();
+		node = propertiesToJson.toJson(resolver, mutableSources);
+		log.info("node: {}", node.toString());
+	}
 
 }

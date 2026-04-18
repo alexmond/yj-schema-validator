@@ -12,10 +12,11 @@ import lombok.Data;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Location {
-    
-    /**
-     * Identifies the artifact and region.
-     */
-    @JsonProperty("physicalLocation")
-    private PhysicalLocation physicalLocation;
+
+	/**
+	 * Identifies the artifact and region.
+	 */
+	@JsonProperty("physicalLocation")
+	private PhysicalLocation physicalLocation;
+
 }

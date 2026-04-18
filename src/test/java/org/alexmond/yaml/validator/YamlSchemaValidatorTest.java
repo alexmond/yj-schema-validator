@@ -14,88 +14,82 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @Slf4j
 public class YamlSchemaValidatorTest {
-    private String reportsDir="src/test/resources/testreport/";
-    private String testDataDir="src/test/resources/testdata/";
 
-    @Autowired
-    private YamlSchemaValidator yamlSchemaValidator;
+	private String reportsDir = "src/test/resources/testreport/";
 
-    @ParameterizedTest(name = "Validate {0} against schema {1}")
-    @CsvSource({
-            "valid.yaml,src/test/resources/testdata/sample-schema.json",
-            "valid.yaml,src/test/resources/testdata/sample-schema.yaml",
-            "valid.yaml,https://www.alexmond.org/spring-boot-config-json-schema-starter/current/boot-generic-config.json",
-            "valid.yaml,",
-            "valid.json,",
-            "remoteValid.yaml,"
-    })
-    void shouldValidateYamlSuccessfully(String yamlPath, String schemaPath) {
-        Map<String, OutputUnit> outputUnitMap;
-        outputUnitMap = yamlSchemaValidator.validate(testDataDir+yamlPath, schemaPath);
-        outputUnitMap.values().stream().findFirst().ifPresent(outputUnit -> assertTrue(outputUnit::isValid, "YAML validation failed: " + outputUnit));
-    }
+	private String testDataDir = "src/test/resources/testdata/";
 
+	@Autowired
+	private YamlSchemaValidator yamlSchemaValidator;
 
+	@ParameterizedTest(name = "Validate {0} against schema {1}")
+	@CsvSource({ "valid.yaml,src/test/resources/testdata/sample-schema.json",
+			"valid.yaml,src/test/resources/testdata/sample-schema.yaml",
+			"valid.yaml,https://www.alexmond.org/spring-boot-config-json-schema-starter/current/boot-generic-config.json",
+			"valid.yaml,", "valid.json,", "remoteValid.yaml," })
+	void shouldValidateYamlSuccessfully(String yamlPath, String schemaPath) {
+		Map<String, OutputUnit> outputUnitMap;
+		outputUnitMap = yamlSchemaValidator.validate(testDataDir + yamlPath, schemaPath);
+		outputUnitMap.values()
+			.stream()
+			.findFirst()
+			.ifPresent((outputUnit) -> assertTrue(outputUnit::isValid, "YAML validation failed: " + outputUnit));
+	}
 
-    @ParameterizedTest
-    @CsvSource({
-            "validNoSchema.yaml,src/test/resources/testdata/missing-schema.yaml,NoSuchFileException",
-            "validNoSchema.yaml,https://www.alexmond.org/spring-boot-config-json-schema-starter/current/missing.json,HTTP request failed with status code 404",
-            "missingfile.yaml,,NoSuchFileException",
-            "empty.yaml,,No schema found in YAML file or provided as parameter",
-            "badformat.yaml,,JacksonYAMLParseException",
-            "invalidRemote.json,,HTTP request failed with status code 404 for"
-    })
-    void testYamlValidationError(String yamlPath, String schemaPath, String error) {
-        Map<String, OutputUnit> outputUnitMap = yamlSchemaValidator.validate(testDataDir+yamlPath, schemaPath);
-        log.error("Yaml validation error: {}", outputUnitMap.toString());
-        OutputUnit outputUnit = outputUnitMap.values().iterator().next();
-        assertFalse(outputUnit.isValid());
-        log.error("Yaml validation error: {}", outputUnit.getErrors());
-        assertTrue(outputUnitMap.containsKey(testDataDir+yamlPath) &&
-            outputUnit.getErrors().get("error") != null &&
-            outputUnit.getErrors().get("error").toString().contains(error));
-    }
+	@ParameterizedTest
+	@CsvSource({ "validNoSchema.yaml,src/test/resources/testdata/missing-schema.yaml,NoSuchFileException",
+			"validNoSchema.yaml,https://www.alexmond.org/spring-boot-config-json-schema-starter/current/missing.json,HTTP request failed with status code 404",
+			"missingfile.yaml,,NoSuchFileException",
+			"empty.yaml,,No schema found in YAML file or provided as parameter",
+			"badformat.yaml,,JacksonYAMLParseException",
+			"invalidRemote.json,,HTTP request failed with status code 404 for" })
+	void testYamlValidationError(String yamlPath, String schemaPath, String error) {
+		Map<String, OutputUnit> outputUnitMap = yamlSchemaValidator.validate(testDataDir + yamlPath, schemaPath);
+		log.error("Yaml validation error: {}", outputUnitMap.toString());
+		OutputUnit outputUnit = outputUnitMap.values().iterator().next();
+		assertFalse(outputUnit.isValid());
+		log.error("Yaml validation error: {}", outputUnit.getErrors());
+		assertTrue(outputUnitMap.containsKey(testDataDir + yamlPath) && outputUnit.getErrors().get("error") != null
+				&& outputUnit.getErrors().get("error").toString().contains(error));
+	}
 
-    @ParameterizedTest
-    @CsvSource(delimiter = ':', value = {
-            "invalid.yaml::integer found, boolean expected",
-    })
-    void testYamlValidationInvalid(String yamlPath, String schemaPath, String error) {
-        Map<String, OutputUnit> outputUnitMap = yamlSchemaValidator.validate(testDataDir+yamlPath, schemaPath);
-        OutputUnit outputUnit = outputUnitMap.values().iterator().next();
-        assertFalse(outputUnit.isValid());
-        assertNotNull(outputUnit.getDetails());
-    }
+	@ParameterizedTest
+	@CsvSource(delimiter = ':', value = { "invalid.yaml::integer found, boolean expected" })
+	void testYamlValidationInvalid(String yamlPath, String schemaPath, String error) {
+		Map<String, OutputUnit> outputUnitMap = yamlSchemaValidator.validate(testDataDir + yamlPath, schemaPath);
+		OutputUnit outputUnit = outputUnitMap.values().iterator().next();
+		assertFalse(outputUnit.isValid());
+		assertNotNull(outputUnit.getDetails());
+	}
 
-    static Stream<Arguments> multiDocProvider() {
-        return Stream.of(
-                Arguments.of(
-                        "multi3valid.yaml", 3, new boolean[]{true, true, true}),
-                Arguments.of(
-                        "multi3invalid.yaml", 3, new boolean[]{true, false, true})
-        );
-    }
+	static Stream<Arguments> multiDocProvider() {
+		return Stream.of(Arguments.of("multi3valid.yaml", 3, new boolean[] { true, true, true }),
+				Arguments.of("multi3invalid.yaml", 3, new boolean[] { true, false, true }));
+	}
 
-    @ParameterizedTest
-    @MethodSource("multiDocProvider")
-    void testMultiDocumentYaml(String yamlPath,int numberOfDocuments,boolean[] valid) {
-        Map<String, OutputUnit> sortedOutputUnitMap = new TreeMap<>();
-        sortedOutputUnitMap.putAll(yamlSchemaValidator.validate(testDataDir+yamlPath, null));
-        log.info("Test multi-doc YAML: {}, expected docs: {}, actual docs: {}, keys: {}",
-                 yamlPath, numberOfDocuments, sortedOutputUnitMap.size(), sortedOutputUnitMap.keySet());
-        assertEquals(numberOfDocuments, sortedOutputUnitMap.size());
-        int index = 0;
-        for (Map.Entry<String, OutputUnit> entry : sortedOutputUnitMap.entrySet()) {
-            OutputUnit outputUnit = entry.getValue();
-            assertEquals(valid[index], outputUnit.isValid());
-            index++;
-        }
-    }
+	@ParameterizedTest
+	@MethodSource("multiDocProvider")
+	void testMultiDocumentYaml(String yamlPath, int numberOfDocuments, boolean[] valid) {
+		Map<String, OutputUnit> sortedOutputUnitMap = new TreeMap<>();
+		sortedOutputUnitMap.putAll(yamlSchemaValidator.validate(testDataDir + yamlPath, null));
+		log.info("Test multi-doc YAML: {}, expected docs: {}, actual docs: {}, keys: {}", yamlPath, numberOfDocuments,
+				sortedOutputUnitMap.size(), sortedOutputUnitMap.keySet());
+		assertEquals(numberOfDocuments, sortedOutputUnitMap.size());
+		int index = 0;
+		for (Map.Entry<String, OutputUnit> entry : sortedOutputUnitMap.entrySet()) {
+			OutputUnit outputUnit = entry.getValue();
+			assertEquals(valid[index], outputUnit.isValid());
+			index++;
+		}
+	}
+
 }

@@ -12,10 +12,11 @@ import lombok.Data;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Tool {
-    
-    /**
-     * The analysis tool driver (core analysis tool).
-     */
-    @JsonProperty("driver")
-    private ToolComponent driver;
+
+	/**
+	 * The analysis tool driver (core analysis tool).
+	 */
+	@JsonProperty("driver")
+	private ToolComponent driver;
+
 }

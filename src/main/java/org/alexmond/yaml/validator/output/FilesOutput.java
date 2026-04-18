@@ -15,142 +15,150 @@ import tools.jackson.dataformat.yaml.YAMLMapper;
 import java.util.Map;
 
 /**
- * Represents the output format for file validation results.
- * This class handles the structured output of validation results for multiple files,
- * providing various output formats including colored console output, JSON, YAML, and JUnit XML.
+ * Represents the output format for file validation results. This class handles the
+ * structured output of validation results for multiple files, providing various output
+ * formats including colored console output, JSON, YAML, and JUnit XML.
  *
- * @see <a href="https://json-schema.org/draft/2020-12/json-schema-core#name-output-formatting">Output Formatting</a>
+ * @see <a href=
+ * "https://json-schema.org/draft/2020-12/json-schema-core#name-output-formatting">Output
+ * Formatting</a>
  */
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonRootName("")
-@JsonPropertyOrder({"valid", "files"})
+@JsonPropertyOrder({ "valid", "files" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FilesOutput {
 
-    /**
-     * Indicates whether all files in the validation set are valid.
-     */
-    private boolean valid;
-    /**
-     * Maps filenames to their corresponding validation results.
-     */
-    private Map<String, OutputUnit> files;
+	/**
+	 * Indicates whether all files in the validation set are valid.
+	 */
+	private boolean valid;
 
-    /**
-     * Constructs a new FilesOutput instance with the given validation results.
-     *
-     * @param files Map of filename to validation results
-     */
-    public FilesOutput(Map<String, OutputUnit> files) {
-        this.files = files;
-        this.valid = files.values().stream().allMatch(OutputUnit::isValid);
-    }
+	/**
+	 * Maps filenames to their corresponding validation results.
+	 */
+	private Map<String, OutputUnit> files;
 
-    // Existing toColoredString, toJsonString, toYamlString methods unchanged...
+	/**
+	 * Constructs a new FilesOutput instance with the given validation results.
+	 * @param files Map of filename to validation results
+	 */
+	public FilesOutput(Map<String, OutputUnit> files) {
+		this.files = files;
+		this.valid = files.values().stream().allMatch(OutputUnit::isValid);
+	}
 
-    /**
-     * Converts the validation results to a human-readable string with optional ANSI color formatting.
-     *
-     * @param color true to enable ANSI color output, false for plain text
-     * @return formatted string representation of the validation results
-     */
+	// Existing toColoredString, toJsonString, toYamlString methods unchanged...
 
-    public String toColoredString(boolean color) {
-        AnsiOutput.Enabled previous = AnsiOutput.getEnabled();
-        AnsiOutput.setEnabled(color ? AnsiOutput.Enabled.ALWAYS : AnsiOutput.Enabled.NEVER);
-        try {
-            StringBuilder result = new StringBuilder();
-            result.append("Validation Result: ");
-            if (valid) {
-                result.append(AnsiOutput.toString(AnsiColor.GREEN, "ok", AnsiColor.DEFAULT));
-            } else {
-                result.append(AnsiOutput.toString(AnsiColor.RED, "invalid", AnsiColor.DEFAULT));
-            }
-            result.append("\n");
+	/**
+	 * Converts the validation results to a human-readable string with optional ANSI color
+	 * formatting.
+	 * @param color true to enable ANSI color output, false for plain text
+	 * @return formatted string representation of the validation results
+	 */
 
-            files.forEach((filename, output) -> {
-                result.append(filename).append(": ");
-                if (output.isValid()) {
-                    result.append(AnsiOutput.toString(AnsiColor.GREEN, "ok", AnsiColor.DEFAULT));
-                } else {
-                    result.append(AnsiOutput.toString(AnsiColor.RED, "invalid", AnsiColor.DEFAULT));
-                }
-                result.append("\n");
+	public String toColoredString(boolean color) {
+		AnsiOutput.Enabled previous = AnsiOutput.getEnabled();
+		AnsiOutput.setEnabled(color ? AnsiOutput.Enabled.ALWAYS : AnsiOutput.Enabled.NEVER);
+		try {
+			StringBuilder result = new StringBuilder();
+			result.append("Validation Result: ");
+			if (valid) {
+				result.append(AnsiOutput.toString(AnsiColor.GREEN, "ok", AnsiColor.DEFAULT));
+			}
+			else {
+				result.append(AnsiOutput.toString(AnsiColor.RED, "invalid", AnsiColor.DEFAULT));
+			}
+			result.append('\n');
 
-                if (!output.isValid() && output.getErrors() != null) {
-                    output.getErrors().forEach((label, message) -> {
-                        result.append(" " + label + ": ").append(message).append("\n");
-                    });
-                }
+			files.forEach((filename, output) -> {
+				result.append(filename).append(": ");
+				if (output.isValid()) {
+					result.append(AnsiOutput.toString(AnsiColor.GREEN, "ok", AnsiColor.DEFAULT));
+				}
+				else {
+					result.append(AnsiOutput.toString(AnsiColor.RED, "invalid", AnsiColor.DEFAULT));
+				}
+				result.append('\n');
 
-                if (!output.isValid() && output.getDetails() != null) {
-                    output.getDetails().forEach(detail -> {
-                        result.append(" Details:\n");
-                        result.append(" Path: ").append(detail.getInstanceLocation()).append("\n");
-                        result.append(" Schema: ").append(detail.getSchemaLocation()).append("\n");
-                        if (detail.getErrors() != null) {
-                            detail.getErrors().forEach((label, message) -> {
-                                result.append(" ").append(label).append(": ").append(message).append("\n");
-                            });
-                        }
-                    });
-                }
-            });
+				if (!output.isValid() && output.getErrors() != null) {
+					output.getErrors()
+						.forEach((label, message) -> result.append(" " + label + ": ").append(message).append('\n'));
+				}
 
-            return result.toString();
-        } finally {
-            AnsiOutput.setEnabled(previous);
-        }
-    }
+				if (!output.isValid() && output.getDetails() != null) {
+					output.getDetails().forEach((detail) -> {
+						result.append(" Details:\n Path: ")
+							.append(detail.getInstanceLocation())
+							.append("\n Schema: ")
+							.append(detail.getSchemaLocation())
+							.append('\n');
+						if (detail.getErrors() != null) {
+							detail.getErrors()
+								.forEach((label, message) -> result.append(' ')
+									.append(label)
+									.append(": ")
+									.append(message)
+									.append('\n'));
+						}
+					});
+				}
+			});
 
-    /**
-     * Converts the validation results to a JSON string representation.
-     *
-     * @return JSON string of the validation results
-     * @throws RuntimeException if JSON conversion fails
-     */
-    public String toJsonString() {
-        JsonMapper jsonMapper = JsonMapper.builder().build();
-        try {
-            return jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
-        } catch (Exception e) {
-            throw new RuntimeException("Error converting to JSON", e);
-        }
-    }
+			return result.toString();
+		}
+		finally {
+			AnsiOutput.setEnabled(previous);
+		}
+	}
 
-    /**
-     * Converts the validation results to a YAML string representation.
-     *
-     * @return YAML string of the validation results
-     * @throws RuntimeException if YAML conversion fails
-     */
-    public String toYamlString() {
-        YAMLMapper yamlMapper = YAMLMapper.builder().build();
-        try {
-            return yamlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
-        } catch (Exception e) {
-            throw new RuntimeException("Error converting to YAML", e);
-        }
-    }
+	/**
+	 * Converts the validation results to a JSON string representation.
+	 * @return JSON string of the validation results
+	 * @throws RuntimeException if JSON conversion fails
+	 */
+	public String toJsonString() {
+		JsonMapper jsonMapper = JsonMapper.builder().build();
+		try {
+			return jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+		}
+		catch (Exception ex) {
+			throw new RuntimeException("Error converting to JSON", ex);
+		}
+	}
 
-    /**
-     * Converts the validation results to JUnit XML format.
-     *
-     * @return JUnit XML string representation of the validation results
-     */
-    public String toJunitString() {
-        FilesOutputToJunit junitOutput = new FilesOutputToJunit(files);
-        return junitOutput.toJunitString();
-    }
+	/**
+	 * Converts the validation results to a YAML string representation.
+	 * @return YAML string of the validation results
+	 * @throws RuntimeException if YAML conversion fails
+	 */
+	public String toYamlString() {
+		YAMLMapper yamlMapper = YAMLMapper.builder().build();
+		try {
+			return yamlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+		}
+		catch (Exception ex) {
+			throw new RuntimeException("Error converting to YAML", ex);
+		}
+	}
 
-    /**
-     * Converts the validation results to SARIF JSON format.
-     *
-     * @return SARIF JSON string representation of the validation results
-     */
-    public String toSarifString() {
-        FilesOutputToSarif sarifOutput = new FilesOutputToSarif(files);
-        return sarifOutput.toSarifString();
-    }
+	/**
+	 * Converts the validation results to JUnit XML format.
+	 * @return JUnit XML string representation of the validation results
+	 */
+	public String toJunitString() {
+		FilesOutputToJunit junitOutput = new FilesOutputToJunit(files);
+		return junitOutput.toJunitString();
+	}
+
+	/**
+	 * Converts the validation results to SARIF JSON format.
+	 * @return SARIF JSON string representation of the validation results
+	 */
+	public String toSarifString() {
+		FilesOutputToSarif sarifOutput = new FilesOutputToSarif(files);
+		return sarifOutput.toSarifString();
+	}
+
 }

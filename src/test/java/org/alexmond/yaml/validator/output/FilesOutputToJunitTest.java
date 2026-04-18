@@ -17,292 +17,279 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Test class for JUnit XML format output generation.
- * Tests the conversion of validation results to JUnit XML format.
+ * Test class for JUnit XML format output generation. Tests the conversion of validation
+ * results to JUnit XML format.
  */
 @Slf4j
 class FilesOutputToJunitTest {
 
-    @Test
-    @DisplayName("toJunitString: Should generate valid JUnit XML when all files are valid")
-    void testToJunitString_AllFilesValid() {
-        // Arrange
-        OutputUnit outputUnit = new OutputUnit();
-        outputUnit.setValid(true);
+	@Test
+	@DisplayName("toJunitString: Should generate valid JUnit XML when all files are valid")
+	void testToJunitString_AllFilesValid() {
+		// Arrange
+		OutputUnit outputUnit = new OutputUnit();
+		outputUnit.setValid(true);
 
-        Map<String, OutputUnit> files = Map.of("file1.yaml", outputUnit);
-        FilesOutput filesOutput = new FilesOutput(files);
+		Map<String, OutputUnit> files = Map.of("file1.yaml", outputUnit);
+		FilesOutput filesOutput = new FilesOutput(files);
 
-        // Act
-        String junitString = filesOutput.toJunitString();
+		// Act
+		String junitString = filesOutput.toJunitString();
 
-        // Assert
-        assertThat(junitString).contains("failures=\"0\"")
-                .contains("<testcase")
-                .contains("classname=\"files\"")
-                .contains("name=\"file1.yaml\"");
-    }
+		// Assert
+		assertThat(junitString).contains("failures=\"0\"")
+			.contains("<testcase")
+			.contains("classname=\"files\"")
+			.contains("name=\"file1.yaml\"");
+	}
 
-    @Test
-    @DisplayName("toJunitString: Should generate JUnit XML with failures for invalid files")
-    void testToJunitString_SomeFilesInvalid() {
-        // Arrange
-        OutputUnit validOutputUnit = Mockito.mock(OutputUnit.class);
-        Mockito.when(validOutputUnit.isValid()).thenReturn(true);
+	@Test
+	@DisplayName("toJunitString: Should generate JUnit XML with failures for invalid files")
+	void testToJunitString_SomeFilesInvalid() {
+		// Arrange
+		OutputUnit validOutputUnit = Mockito.mock(OutputUnit.class);
+		Mockito.when(validOutputUnit.isValid()).thenReturn(true);
 
-        OutputUnit invalidOutputUnit = Mockito.mock(OutputUnit.class);
-        Mockito.when(invalidOutputUnit.isValid()).thenReturn(false);
-        Mockito.when(invalidOutputUnit.getErrors()).thenReturn(Map.of("errorKey", "Error message"));
+		OutputUnit invalidOutputUnit = Mockito.mock(OutputUnit.class);
+		Mockito.when(invalidOutputUnit.isValid()).thenReturn(false);
+		Mockito.when(invalidOutputUnit.getErrors()).thenReturn(Map.of("errorKey", "Error message"));
 
-        Map<String, OutputUnit> files = Map.of(
-                "file1.yaml", validOutputUnit,
-                "file2.yaml", invalidOutputUnit
-        );
-        FilesOutput filesOutput = new FilesOutput(files);
+		Map<String, OutputUnit> files = Map.of("file1.yaml", validOutputUnit, "file2.yaml", invalidOutputUnit);
+		FilesOutput filesOutput = new FilesOutput(files);
 
-        // Act
-        String junitString = filesOutput.toJunitString();
+		// Act
+		String junitString = filesOutput.toJunitString();
 
-        // Assert
-        assertThat(junitString).contains("<testsuite")
-                .contains("name=\"file1.yaml\"")
-                .contains("name=\"file2.yaml\"")
-                .contains("<failure message=\"Validation Failure\"");
-    }
+		// Assert
+		assertThat(junitString).contains("<testsuite")
+			.contains("name=\"file1.yaml\"")
+			.contains("name=\"file2.yaml\"")
+			.contains("<failure message=\"Validation Failure\"");
+	}
 
-    @Test
-    @DisplayName("toJunitString: Should include file details in JUnit XML for invalid files")
-    void testToJunitString_InvalidFilesWithDetails() {
-        // Arrange
-        OutputUnit detailOutputUnit = Mockito.mock(OutputUnit.class);
-        Mockito.when(detailOutputUnit.getInstanceLocation()).thenReturn("$.sample.boolean-sample");
-        Mockito.when(detailOutputUnit.getSchemaLocation()).thenReturn("urn:example:10#/properties/sample/properties/boolean-sample");
-        Mockito.when(detailOutputUnit.getErrors()).thenReturn(Map.of("type", "integer found, boolean expected"));
+	@Test
+	@DisplayName("toJunitString: Should include file details in JUnit XML for invalid files")
+	void testToJunitString_InvalidFilesWithDetails() {
+		// Arrange
+		OutputUnit detailOutputUnit = Mockito.mock(OutputUnit.class);
+		Mockito.when(detailOutputUnit.getInstanceLocation()).thenReturn("$.sample.boolean-sample");
+		Mockito.when(detailOutputUnit.getSchemaLocation())
+			.thenReturn("urn:example:10#/properties/sample/properties/boolean-sample");
+		Mockito.when(detailOutputUnit.getErrors()).thenReturn(Map.of("type", "integer found, boolean expected"));
 
-        OutputUnit invalidOutputUnit = Mockito.mock(OutputUnit.class);
-        Mockito.when(invalidOutputUnit.isValid()).thenReturn(false);
-        Mockito.when(invalidOutputUnit.getDetails()).thenReturn(Collections.singletonList(detailOutputUnit));
+		OutputUnit invalidOutputUnit = Mockito.mock(OutputUnit.class);
+		Mockito.when(invalidOutputUnit.isValid()).thenReturn(false);
+		Mockito.when(invalidOutputUnit.getDetails()).thenReturn(Collections.singletonList(detailOutputUnit));
 
-        Map<String, OutputUnit> files = Map.of("invalid.yaml", invalidOutputUnit);
-        FilesOutput filesOutput = new FilesOutput(files);
+		Map<String, OutputUnit> files = Map.of("invalid.yaml", invalidOutputUnit);
+		FilesOutput filesOutput = new FilesOutput(files);
 
-        // Act
-        String junitString = filesOutput.toJunitString();
-        
-        
-        // Assert
-        try {
-            Files.writeString(Path.of("test1junit.xml"), junitString);
-            assertTrue(XmlCompareUtil.compareFileToString(junitString, "src/test/resources/testreport/test1junit.xml"));
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to write JUnit XML file", e);
-        }
-    }
+		// Act
+		String junitString = filesOutput.toJunitString();
 
-    @Test
-    @DisplayName("toJunitString: Should include testsuite element with correct attributes")
-    void testToJunitString_TestsuiteAttributes() {
-        // Arrange
-        OutputUnit validOutputUnit = Mockito.mock(OutputUnit.class);
-        Mockito.when(validOutputUnit.isValid()).thenReturn(true);
+		// Assert
+		try {
+			Files.writeString(Path.of("test1junit.xml"), junitString);
+			assertTrue(XmlCompareUtil.compareFileToString(junitString, "src/test/resources/testreport/test1junit.xml"));
+		}
+		catch (IOException ex) {
+			throw new RuntimeException("Failed to write JUnit XML file", ex);
+		}
+	}
 
-        OutputUnit invalidOutputUnit = Mockito.mock(OutputUnit.class);
-        Mockito.when(invalidOutputUnit.isValid()).thenReturn(false);
-        Mockito.when(invalidOutputUnit.getErrors()).thenReturn(Map.of("error", "Validation failed"));
+	@Test
+	@DisplayName("toJunitString: Should include testsuite element with correct attributes")
+	void testToJunitString_TestsuiteAttributes() {
+		// Arrange
+		OutputUnit validOutputUnit = Mockito.mock(OutputUnit.class);
+		Mockito.when(validOutputUnit.isValid()).thenReturn(true);
 
-        Map<String, OutputUnit> files = Map.of(
-                "file1.yaml", validOutputUnit,
-                "file2.yaml", invalidOutputUnit
-        );
-        FilesOutput filesOutput = new FilesOutput(files);
+		OutputUnit invalidOutputUnit = Mockito.mock(OutputUnit.class);
+		Mockito.when(invalidOutputUnit.isValid()).thenReturn(false);
+		Mockito.when(invalidOutputUnit.getErrors()).thenReturn(Map.of("error", "Validation failed"));
 
-        // Act
-        String junitString = filesOutput.toJunitString();
+		Map<String, OutputUnit> files = Map.of("file1.yaml", validOutputUnit, "file2.yaml", invalidOutputUnit);
+		FilesOutput filesOutput = new FilesOutput(files);
 
-        // Assert
-        assertThat(junitString).contains("name=\"SchemaValidationSuite\"")
-                .contains("tests=\"2\"")
-                .contains("failures=\"1\"")
-                .contains("errors=\"0\"");
-    }
+		// Act
+		String junitString = filesOutput.toJunitString();
 
-    @Test
-    @DisplayName("toJunitString: Should categorize error types correctly")
-    void testToJunitString_ErrorTypeCategorization() {
-        // Arrange
-        OutputUnit noSchemaUnit = Mockito.mock(OutputUnit.class);
-        Mockito.when(noSchemaUnit.isValid()).thenReturn(false);
-        Mockito.when(noSchemaUnit.getErrors()).thenReturn(Map.of("error", "No schema found"));
+		// Assert
+		assertThat(junitString).contains("name=\"SchemaValidationSuite\"")
+			.contains("tests=\"2\"")
+			.contains("failures=\"1\"")
+			.contains("errors=\"0\"");
+	}
 
-        Map<String, OutputUnit> files = Map.of("test.yaml", noSchemaUnit);
-        FilesOutput filesOutput = new FilesOutput(files);
+	@Test
+	@DisplayName("toJunitString: Should categorize error types correctly")
+	void testToJunitString_ErrorTypeCategorization() {
+		// Arrange
+		OutputUnit noSchemaUnit = Mockito.mock(OutputUnit.class);
+		Mockito.when(noSchemaUnit.isValid()).thenReturn(false);
+		Mockito.when(noSchemaUnit.getErrors()).thenReturn(Map.of("error", "No schema found"));
 
-        // Act
-        String junitString = filesOutput.toJunitString();
+		Map<String, OutputUnit> files = Map.of("test.yaml", noSchemaUnit);
+		FilesOutput filesOutput = new FilesOutput(files);
 
-        // Assert
-        assertThat(junitString).contains("<failure message=\"No Schema Error\"");
-    }
+		// Act
+		String junitString = filesOutput.toJunitString();
 
-    @Test
-    @DisplayName("toJunitString: Should handle YAML parse errors")
-    void testToJunitString_YamlParseError() {
-        // Arrange
-        OutputUnit parseErrorUnit = Mockito.mock(OutputUnit.class);
-        Mockito.when(parseErrorUnit.isValid()).thenReturn(false);
-        Mockito.when(parseErrorUnit.getErrors())
-                .thenReturn(Map.of("error", "MarkedYAMLException: invalid YAML syntax"));
+		// Assert
+		assertThat(junitString).contains("<failure message=\"No Schema Error\"");
+	}
 
-        Map<String, OutputUnit> files = Map.of("invalid.yaml", parseErrorUnit);
-        FilesOutput filesOutput = new FilesOutput(files);
+	@Test
+	@DisplayName("toJunitString: Should handle YAML parse errors")
+	void testToJunitString_YamlParseError() {
+		// Arrange
+		OutputUnit parseErrorUnit = Mockito.mock(OutputUnit.class);
+		Mockito.when(parseErrorUnit.isValid()).thenReturn(false);
+		Mockito.when(parseErrorUnit.getErrors())
+			.thenReturn(Map.of("error", "MarkedYAMLException: invalid YAML syntax"));
 
-        // Act
-        String junitString = filesOutput.toJunitString();
+		Map<String, OutputUnit> files = Map.of("invalid.yaml", parseErrorUnit);
+		FilesOutput filesOutput = new FilesOutput(files);
 
-        // Assert
-        assertThat(junitString).contains("<failure message=\"YAML Parse Error\"");
-    }
+		// Act
+		String junitString = filesOutput.toJunitString();
 
-    @Test
-    @DisplayName("toJunitString: Should include failure message for type mismatch")
-    void testToJunitString_TypeMismatchError() {
-        // Arrange
-        OutputUnit detailOutputUnit = Mockito.mock(OutputUnit.class);
-        Mockito.when(detailOutputUnit.getInstanceLocation()).thenReturn("$.data.field");
-        Mockito.when(detailOutputUnit.getErrors()).thenReturn(Map.of("type", "string expected"));
+		// Assert
+		assertThat(junitString).contains("<failure message=\"YAML Parse Error\"");
+	}
 
-        OutputUnit invalidOutputUnit = Mockito.mock(OutputUnit.class);
-        Mockito.when(invalidOutputUnit.isValid()).thenReturn(false);
-        Mockito.when(invalidOutputUnit.getDetails()).thenReturn(Collections.singletonList(detailOutputUnit));
+	@Test
+	@DisplayName("toJunitString: Should include failure message for type mismatch")
+	void testToJunitString_TypeMismatchError() {
+		// Arrange
+		OutputUnit detailOutputUnit = Mockito.mock(OutputUnit.class);
+		Mockito.when(detailOutputUnit.getInstanceLocation()).thenReturn("$.data.field");
+		Mockito.when(detailOutputUnit.getErrors()).thenReturn(Map.of("type", "string expected"));
 
-        Map<String, OutputUnit> files = Map.of("test.yaml", invalidOutputUnit);
-        FilesOutput filesOutput = new FilesOutput(files);
+		OutputUnit invalidOutputUnit = Mockito.mock(OutputUnit.class);
+		Mockito.when(invalidOutputUnit.isValid()).thenReturn(false);
+		Mockito.when(invalidOutputUnit.getDetails()).thenReturn(Collections.singletonList(detailOutputUnit));
 
-        // Act
-        String junitString = filesOutput.toJunitString();
+		Map<String, OutputUnit> files = Map.of("test.yaml", invalidOutputUnit);
+		FilesOutput filesOutput = new FilesOutput(files);
 
-        // Assert
-        assertThat(junitString).contains("<failure message=\"Type Mismatch at $.data.field\"");
-    }
+		// Act
+		String junitString = filesOutput.toJunitString();
 
-    @Test
-    @DisplayName("toJunitString: Should handle multiple files with mixed results")
-    void testToJunitString_MultipleFilesMixedResults() {
-        // Arrange
-        OutputUnit valid1 = Mockito.mock(OutputUnit.class);
-        Mockito.when(valid1.isValid()).thenReturn(true);
+		// Assert
+		assertThat(junitString).contains("<failure message=\"Type Mismatch at $.data.field\"");
+	}
 
-        OutputUnit valid2 = Mockito.mock(OutputUnit.class);
-        Mockito.when(valid2.isValid()).thenReturn(true);
+	@Test
+	@DisplayName("toJunitString: Should handle multiple files with mixed results")
+	void testToJunitString_MultipleFilesMixedResults() {
+		// Arrange
+		OutputUnit valid1 = Mockito.mock(OutputUnit.class);
+		Mockito.when(valid1.isValid()).thenReturn(true);
 
-        OutputUnit invalid1 = Mockito.mock(OutputUnit.class);
-        Mockito.when(invalid1.isValid()).thenReturn(false);
-        Mockito.when(invalid1.getErrors()).thenReturn(Map.of("error", "Error 1"));
+		OutputUnit valid2 = Mockito.mock(OutputUnit.class);
+		Mockito.when(valid2.isValid()).thenReturn(true);
 
-        OutputUnit invalid2 = Mockito.mock(OutputUnit.class);
-        Mockito.when(invalid2.isValid()).thenReturn(false);
-        Mockito.when(invalid2.getErrors()).thenReturn(Map.of("error", "Error 2"));
+		OutputUnit invalid1 = Mockito.mock(OutputUnit.class);
+		Mockito.when(invalid1.isValid()).thenReturn(false);
+		Mockito.when(invalid1.getErrors()).thenReturn(Map.of("error", "Error 1"));
 
-        Map<String, OutputUnit> files = Map.of(
-                "valid1.yaml", valid1,
-                "valid2.yaml", valid2,
-                "invalid1.yaml", invalid1,
-                "invalid2.yaml", invalid2
-        );
-        FilesOutput filesOutput = new FilesOutput(files);
+		OutputUnit invalid2 = Mockito.mock(OutputUnit.class);
+		Mockito.when(invalid2.isValid()).thenReturn(false);
+		Mockito.when(invalid2.getErrors()).thenReturn(Map.of("error", "Error 2"));
 
-        // Act
-        String junitString = filesOutput.toJunitString();
+		Map<String, OutputUnit> files = Map.of("valid1.yaml", valid1, "valid2.yaml", valid2, "invalid1.yaml", invalid1,
+				"invalid2.yaml", invalid2);
+		FilesOutput filesOutput = new FilesOutput(files);
 
-        // Assert
-        assertThat(junitString).contains("tests=\"4\"")
-                .contains("failures=\"2\"")
-                .contains("name=\"valid1.yaml\"")
-                .contains("name=\"valid2.yaml\"")
-                .contains("name=\"invalid1.yaml\"")
-                .contains("name=\"invalid2.yaml\"");
-    }
+		// Act
+		String junitString = filesOutput.toJunitString();
 
-    @Test
-    @DisplayName("toJunitString: Should be valid XML")
-    void testToJunitString_ValidXml() {
-        // Arrange
-        OutputUnit outputUnit = new OutputUnit();
-        outputUnit.setValid(true);
+		// Assert
+		assertThat(junitString).contains("tests=\"4\"")
+			.contains("failures=\"2\"")
+			.contains("name=\"valid1.yaml\"")
+			.contains("name=\"valid2.yaml\"")
+			.contains("name=\"invalid1.yaml\"")
+			.contains("name=\"invalid2.yaml\"");
+	}
 
-        Map<String, OutputUnit> files = Map.of("file1.yaml", outputUnit);
-        FilesOutput filesOutput = new FilesOutput(files);
+	@Test
+	@DisplayName("toJunitString: Should be valid XML")
+	void testToJunitString_ValidXml() {
+		// Arrange
+		OutputUnit outputUnit = new OutputUnit();
+		outputUnit.setValid(true);
 
-        // Act
-        String junitString = filesOutput.toJunitString();
+		Map<String, OutputUnit> files = Map.of("file1.yaml", outputUnit);
+		FilesOutput filesOutput = new FilesOutput(files);
 
-        // Assert
-        assertThat(junitString).isNotEmpty()
-                .startsWith("<?xml")
-                .contains("</testsuites>");
-    }
+		// Act
+		String junitString = filesOutput.toJunitString();
 
-    @Test
-    @DisplayName("toJunitString: Should include testsuites root element")
-    void testToJunitString_RootElement() {
-        // Arrange
-        OutputUnit outputUnit = new OutputUnit();
-        outputUnit.setValid(true);
+		// Assert
+		assertThat(junitString).isNotEmpty().startsWith("<?xml").contains("</testsuites>");
+	}
 
-        Map<String, OutputUnit> files = Map.of("file1.yaml", outputUnit);
-        FilesOutput filesOutput = new FilesOutput(files);
+	@Test
+	@DisplayName("toJunitString: Should include testsuites root element")
+	void testToJunitString_RootElement() {
+		// Arrange
+		OutputUnit outputUnit = new OutputUnit();
+		outputUnit.setValid(true);
 
-        // Act
-        String junitString = filesOutput.toJunitString();
+		Map<String, OutputUnit> files = Map.of("file1.yaml", outputUnit);
+		FilesOutput filesOutput = new FilesOutput(files);
 
-        // Assert
-        assertThat(junitString).contains("<testsuites")
-                .contains("</testsuites>")
-                .contains("<testsuite")
-                .contains("</testsuite>");
-    }
+		// Act
+		String junitString = filesOutput.toJunitString();
 
-    @Test
-    @DisplayName("toJunitString: Should set time attribute to 0.0 for all testcases")
-    void testToJunitString_TimeAttribute() {
-        // Arrange
-        OutputUnit outputUnit = new OutputUnit();
-        outputUnit.setValid(true);
+		// Assert
+		assertThat(junitString).contains("<testsuites")
+			.contains("</testsuites>")
+			.contains("<testsuite")
+			.contains("</testsuite>");
+	}
 
-        Map<String, OutputUnit> files = Map.of("file1.yaml", outputUnit);
-        FilesOutput filesOutput = new FilesOutput(files);
+	@Test
+	@DisplayName("toJunitString: Should set time attribute to 0.0 for all testcases")
+	void testToJunitString_TimeAttribute() {
+		// Arrange
+		OutputUnit outputUnit = new OutputUnit();
+		outputUnit.setValid(true);
 
-        // Act
-        String junitString = filesOutput.toJunitString();
+		Map<String, OutputUnit> files = Map.of("file1.yaml", outputUnit);
+		FilesOutput filesOutput = new FilesOutput(files);
 
-        // Assert
-        assertThat(junitString).contains("time=\"0.0\"");
-    }
+		// Act
+		String junitString = filesOutput.toJunitString();
 
-    @Test
-    @DisplayName("toJunitString: Should include full error message in failure value")
-    void testToJunitString_FullErrorMessage() {
-        // Arrange
-        OutputUnit detailUnit1 = Mockito.mock(OutputUnit.class);
-        Mockito.when(detailUnit1.getErrors()).thenReturn(Map.of("type", "First error"));
+		// Assert
+		assertThat(junitString).contains("time=\"0.0\"");
+	}
 
-        OutputUnit detailUnit2 = Mockito.mock(OutputUnit.class);
-        Mockito.when(detailUnit2.getErrors()).thenReturn(Map.of("required", "Second error"));
+	@Test
+	@DisplayName("toJunitString: Should include full error message in failure value")
+	void testToJunitString_FullErrorMessage() {
+		// Arrange
+		OutputUnit detailUnit1 = Mockito.mock(OutputUnit.class);
+		Mockito.when(detailUnit1.getErrors()).thenReturn(Map.of("type", "First error"));
 
-        OutputUnit invalidOutputUnit = Mockito.mock(OutputUnit.class);
-        Mockito.when(invalidOutputUnit.isValid()).thenReturn(false);
-        Mockito.when(invalidOutputUnit.getDetails())
-                .thenReturn(java.util.List.of(detailUnit1, detailUnit2));
+		OutputUnit detailUnit2 = Mockito.mock(OutputUnit.class);
+		Mockito.when(detailUnit2.getErrors()).thenReturn(Map.of("required", "Second error"));
 
-        Map<String, OutputUnit> files = Map.of("test.yaml", invalidOutputUnit);
-        FilesOutput filesOutput = new FilesOutput(files);
+		OutputUnit invalidOutputUnit = Mockito.mock(OutputUnit.class);
+		Mockito.when(invalidOutputUnit.isValid()).thenReturn(false);
+		Mockito.when(invalidOutputUnit.getDetails()).thenReturn(java.util.List.of(detailUnit1, detailUnit2));
 
-        // Act
-        String junitString = filesOutput.toJunitString();
+		Map<String, OutputUnit> files = Map.of("test.yaml", invalidOutputUnit);
+		FilesOutput filesOutput = new FilesOutput(files);
 
-        // Assert
-        assertThat(junitString).contains("First error")
-                .contains("Second error");
-    }
+		// Act
+		String junitString = filesOutput.toJunitString();
+
+		// Assert
+		assertThat(junitString).contains("First error").contains("Second error");
+	}
 
 }
