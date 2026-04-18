@@ -12,16 +12,17 @@ import lombok.Data;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ArtifactLocation {
-    
-    /**
-     * A string containing a valid relative or absolute URI.
-     */
-    @JsonProperty("uri")
-    private String uri;
-    
-    /**
-     * A string which indirectly specifies the absolute URI.
-     */
-    @JsonProperty("uriBaseId")
-    private String uriBaseId;
+
+	/**
+	 * A string containing a valid relative or absolute URI.
+	 */
+	@JsonProperty("uri")
+	private String uri;
+
+	/**
+	 * A string which indirectly specifies the absolute URI.
+	 */
+	@JsonProperty("uriBaseId")
+	private String uriBaseId;
+
 }

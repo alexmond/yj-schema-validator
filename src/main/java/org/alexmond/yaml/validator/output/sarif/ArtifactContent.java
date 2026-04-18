@@ -12,10 +12,11 @@ import lombok.Data;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ArtifactContent {
-    
-    /**
-     * UTF-8-encoded content from an artifact.
-     */
-    @JsonProperty("text")
-    private String text;
+
+	/**
+	 * UTF-8-encoded content from an artifact.
+	 */
+	@JsonProperty("text")
+	private String text;
+
 }

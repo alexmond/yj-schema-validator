@@ -12,28 +12,29 @@ import lombok.Data;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Invocation {
-    
-    /**
-     * Specifies whether the tool's execution completed successfully.
-     */
-    @JsonProperty("executionSuccessful")
-    private Boolean executionSuccessful;
-    
-    /**
-     * The start time of the invocation.
-     */
-    @JsonProperty("startTimeUtc")
-    private String startTimeUtc;
-    
-    /**
-     * The end time of the invocation.
-     */
-    @JsonProperty("endTimeUtc")
-    private String endTimeUtc;
-    
-    /**
-     * The process exit code.
-     */
-    @JsonProperty("exitCode")
-    private Integer exitCode;
+
+	/**
+	 * Specifies whether the tool's execution completed successfully.
+	 */
+	@JsonProperty("executionSuccessful")
+	private Boolean executionSuccessful;
+
+	/**
+	 * The start time of the invocation.
+	 */
+	@JsonProperty("startTimeUtc")
+	private String startTimeUtc;
+
+	/**
+	 * The end time of the invocation.
+	 */
+	@JsonProperty("endTimeUtc")
+	private String endTimeUtc;
+
+	/**
+	 * The process exit code.
+	 */
+	@JsonProperty("exitCode")
+	private Integer exitCode;
+
 }

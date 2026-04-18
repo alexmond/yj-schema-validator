@@ -16,22 +16,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ActiveProfiles("test")
 public class YamlSchemaValidatorStdinTest {
 
-    @Autowired
-    private YamlSchemaValidator yamlSchemaValidator;
+	@Autowired
+	private YamlSchemaValidator yamlSchemaValidator;
 
-    @Test
-    void shouldValidateStdinSuccessfully() {
-        String yamlContent = """
-                name: "test"
-                version: 1.0
-                """;
-        String schemaPath = "src/test/resources/testdata/sample-schema.json";
-        
-        ByteArrayInputStream bais = new ByteArrayInputStream(yamlContent.getBytes(StandardCharsets.UTF_8));
-        
-        Map<String, OutputUnit> results = yamlSchemaValidator.validate(bais, "stdin", schemaPath);
-        
-        assertTrue(results.containsKey("stdin"));
-        assertTrue(results.get("stdin").isValid());
-    }
+	@Test
+	void shouldValidateStdinSuccessfully() {
+		String yamlContent = """
+				name: "test"
+				version: 1.0
+				""";
+		String schemaPath = "src/test/resources/testdata/sample-schema.json";
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(yamlContent.getBytes(StandardCharsets.UTF_8));
+
+		Map<String, OutputUnit> results = yamlSchemaValidator.validate(bais, "stdin", schemaPath);
+
+		assertTrue(results.containsKey("stdin"));
+		assertTrue(results.get("stdin").isValid());
+	}
+
 }

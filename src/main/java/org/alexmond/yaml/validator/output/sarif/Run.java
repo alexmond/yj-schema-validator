@@ -15,24 +15,25 @@ import java.util.List;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Run {
-    
-    /**
-     * Information about the analysis tool.
-     */
-    @JsonProperty("tool")
-    private Tool tool;
-    
-    /**
-     * The set of results contained in this run.
-     */
-    @JsonProperty("results")
-    @Singular
-    private List<Result> results;
-    
-    /**
-     * Describes the invocation of the analysis tool.
-     */
-    @JsonProperty("invocations")
-    @Singular
-    private List<Invocation> invocations;
+
+	/**
+	 * Information about the analysis tool.
+	 */
+	@JsonProperty("tool")
+	private Tool tool;
+
+	/**
+	 * The set of results contained in this run.
+	 */
+	@JsonProperty("results")
+	@Singular
+	private List<Result> results;
+
+	/**
+	 * Describes the invocation of the analysis tool.
+	 */
+	@JsonProperty("invocations")
+	@Singular
+	private List<Invocation> invocations;
+
 }
