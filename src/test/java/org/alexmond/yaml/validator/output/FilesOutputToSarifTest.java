@@ -1,7 +1,8 @@
 package org.alexmond.yaml.validator.output;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 import com.networknt.schema.output.OutputUnit;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class FilesOutputToSarifTest {
 
-	private static final ObjectMapper objectMapper = new ObjectMapper();
+	private static final JsonMapper objectMapper = JsonMapper.builder().build();
 
 	@Test
 	@DisplayName("toSarifString: Should generate valid SARIF JSON when all files are valid")
@@ -261,13 +262,8 @@ class FilesOutputToSarifTest {
 		assertThat(sarifString).isNotEmpty();
 
 		// Verify it's valid JSON by parsing it
-		try {
-			JsonNode jsonNode = objectMapper.readTree(sarifString);
-			assertThat(jsonNode).isNotNull();
-		}
-		catch (IOException ex) {
-			throw new AssertionError("Generated SARIF is not valid JSON", ex);
-		}
+		JsonNode jsonNode = objectMapper.readTree(sarifString);
+		assertThat(jsonNode).isNotNull();
 	}
 
 	/**
@@ -300,8 +296,8 @@ class FilesOutputToSarifTest {
 	 */
 	private void removeTimestampFields(JsonNode jsonNode) {
 		if (jsonNode.isObject()) {
-			((com.fasterxml.jackson.databind.node.ObjectNode) jsonNode).remove("startTimeUtc");
-			((com.fasterxml.jackson.databind.node.ObjectNode) jsonNode).remove("endTimeUtc");
+			((ObjectNode) jsonNode).remove("startTimeUtc");
+			((ObjectNode) jsonNode).remove("endTimeUtc");
 		}
 		jsonNode.forEach(this::removeTimestampFields);
 	}
