@@ -1,10 +1,10 @@
 package org.alexmond.yaml.validator.testimpl; // Java
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
@@ -24,7 +24,7 @@ public class PropertiesToJson {
 	private static final Pattern INDEX = Pattern.compile("\\[([0-9]+)]");
 
 	public JsonNode toJson(PropertySourcesPropertyResolver resolver, MutablePropertySources sources) {
-		ObjectMapper mapper = new ObjectMapper();
+		JsonMapper mapper = JsonMapper.builder().build();
 		ObjectNode root = mapper.createObjectNode();
 		Collection<String> propertyNames = collectPropertyNames(sources);
 
@@ -49,7 +49,7 @@ public class PropertiesToJson {
 		return names;
 	}
 
-	private void insert(ObjectNode root, String key, JsonNode value, ObjectMapper mapper) {
+	private void insert(ObjectNode root, String key, JsonNode value, JsonMapper mapper) {
 		ObjectNode currentObj = root;
 		ArrayNode currentArr = null;
 		String pendingLeaf = null;
@@ -179,7 +179,7 @@ public class PropertiesToJson {
 		}
 	}
 
-	private ObjectNode ensureObject(ArrayNode array, int index, ObjectMapper mapper) {
+	private ObjectNode ensureObject(ArrayNode array, int index, JsonMapper mapper) {
 		// When index == -1 this method is used only to satisfy flow; return a new object
 		if (index < 0) {
 			return mapper.createObjectNode();
@@ -194,7 +194,7 @@ public class PropertiesToJson {
 		return (ObjectNode) node;
 	}
 
-	private JsonNode coerce(ObjectMapper mapper, String value) {
+	private JsonNode coerce(JsonMapper mapper, String value) {
 		if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
 			return mapper.getNodeFactory().booleanNode(Boolean.parseBoolean(value));
 		}

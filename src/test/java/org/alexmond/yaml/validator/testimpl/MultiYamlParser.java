@@ -1,7 +1,7 @@
 package org.alexmond.yaml.validator.testimpl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
@@ -23,8 +23,9 @@ public class MultiYamlParser {
 
 	private final Yaml yaml = new Yaml(); // Thread-safe; reuse instance
 
-	private final ObjectMapper objectMapper = new ObjectMapper(); // For converting to
-																	// JsonNode
+	private final JsonMapper objectMapper = JsonMapper.builder().build(); // For
+																			// converting
+																			// to JsonNode
 
 	/**
 	 * Parses multi-document YAML content (as a string) into a list of JsonNode documents.
