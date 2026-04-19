@@ -79,7 +79,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Build native image
-        run: ./mvnw -B -Pnative native:compile -DskipTests --no-transfer-progress
+        run: ./mvnw -B -Pnative package -DskipTests --no-transfer-progress
 
       - name: Rename artifact
         shell: bash

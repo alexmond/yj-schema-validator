@@ -33,5 +33,5 @@
     <suppress checks="FileLength" files=".*Test\.java"/>
 
     <!-- Test implementation helper files are exempt from method length limits -->
-    <suppress checks="MethodLength" files=".*/testimpl/.*\.java"/>
+    <suppress checks="MethodLength" files=".*[/\\]testimpl[/\\].*\.java"/>
 </suppressions>
