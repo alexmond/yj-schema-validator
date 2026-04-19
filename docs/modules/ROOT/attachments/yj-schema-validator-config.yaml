@@ -1914,6 +1914,139 @@ properties:
                 type: "string"
                 description: "Location of the generated git.properties file."
                 default: "classpath:git.properties"
+      jackson:
+        type: "object"
+        $anchor: "org.springframework.boot.jackson.autoconfigure.JacksonProperties"
+        properties:
+          cbor:
+            type: "object"
+            $anchor: "org.springframework.boot.jackson.autoconfigure.JacksonCborProperties"
+            properties:
+              read:
+                type: "object"
+                description: "Jackson on/off token reader features that are specific\
+                  \ to CBOR."
+              write:
+                type: "object"
+                description: "Jackson on/off token writer features that are specific\
+                  \ to CBOR."
+          constructor-detector:
+            type: "string"
+            description: "Strategy to use to auto-detect constructor, and in particular\
+              \ behavior with single-argument constructors."
+            default: "default"
+            enum:
+            - "EXPLICIT_ONLY"
+            - "explicit_only"
+            - "default"
+            - "USE_PROPERTIES_BASED"
+            - "USE_DELEGATING"
+            - "use_delegating"
+            - "use_properties_based"
+            - "DEFAULT"
+          datatype:
+            type: "object"
+            $anchor: "org.springframework.boot.jackson.autoconfigure.JacksonProperties:Datatype"
+            properties:
+              datetime:
+                type: "object"
+                description: "Jackson on/off features for DateTimes."
+              enum:
+                type: "object"
+                description: "Jackson on/off features for enums."
+              enum-features:
+                type: "object"
+              json-node:
+                type: "object"
+                description: "Jackson on/off features for JsonNodes."
+          date-format:
+            type: "string"
+            description: "Date format string or a fully-qualified date format class\
+              \ name. For instance, 'yyyy-MM-dd HH:mm:ss'."
+          default-leniency:
+            type: "boolean"
+            description: "Global default setting (if any) for leniency."
+          default-property-inclusion:
+            type: "string"
+            description: "Controls the inclusion of properties during serialization.\
+              \ Configured with one of the values in Jackson's JsonInclude.Include\
+              \ enumeration."
+            enum:
+            - "always"
+            - "non_null"
+            - "non_absent"
+            - "non_default"
+            - "custom"
+            - "ALWAYS"
+            - "non_empty"
+            - "NON_DEFAULT"
+            - "NON_EMPTY"
+            - "NON_ABSENT"
+            - "USE_DEFAULTS"
+            - "NON_NULL"
+            - "CUSTOM"
+            - "use_defaults"
+          deserialization:
+            type: "object"
+            description: "Jackson on/off features that affect the way Java objects\
+              \ are deserialized."
+          find-and-add-modules:
+            type: "boolean"
+            description: "Whether to find and add modules to the auto-configured JsonMapper.Builder\
+              \ using MapperBuilder.findAndAddModules(ClassLoader)."
+            default: true
+          json:
+            type: "object"
+            $anchor: "org.springframework.boot.jackson.autoconfigure.JacksonProperties:Json"
+            properties:
+              read:
+                type: "object"
+                description: "Jackson on/off token reader features that are specific\
+                  \ to JSON."
+              write:
+                type: "object"
+                description: "Jackson on/off token writer features that are specific\
+                  \ to JSON."
+          locale:
+            $ref: "#/$defs/java.util.Locale"
+            description: "Locale used for formatting."
+          mapper:
+            type: "object"
+            description: "Jackson general purpose on/off features."
+          property-naming-strategy:
+            type: "string"
+            description: "One of the constants on Jackson's PropertyNamingStrategies.\
+              \ Can also be a fully-qualified class name of a PropertyNamingStrategy\
+              \ implementation."
+          serialization:
+            type: "object"
+            description: "Jackson on/off features that affect the way Java objects\
+              \ are serialized."
+          time-zone:
+            type: "string"
+            description: "Time zone used when formatting dates. For instance, \"America/Los_Angeles\"\
+              \ or \"GMT+10\"."
+          use-jackson2-defaults:
+            type: "boolean"
+            description: "Whether to configure Jackson 3 with the same defaults as\
+              \ Spring Boot previously used for Jackson 2."
+            default: false
+          visibility:
+            type: "object"
+            description: "Jackson visibility thresholds that can be used to limit\
+              \ which methods (and fields) are auto-detected."
+          xml:
+            type: "object"
+            $anchor: "org.springframework.boot.jackson.autoconfigure.JacksonXmlProperties"
+            properties:
+              read:
+                type: "object"
+                description: "Jackson on/off token reader features that are specific\
+                  \ to XML."
+              write:
+                type: "object"
+                description: "Jackson on/off token writer features that are specific\
+                  \ to XML."
       jmx:
         type: "object"
         $anchor: "org.springframework.boot.autoconfigure.jmx.JmxProperties"
