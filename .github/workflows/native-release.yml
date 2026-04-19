@@ -18,7 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag || github.ref }}
+          ref: ${{ github.ref }}
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -26,6 +26,10 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
           cache: 'maven'
+
+      - name: Set release version
+        if: inputs.tag
+        run: ./mvnw versions:set -DnewVersion=${{ inputs.tag }} -q
 
       - name: Build JAR
         run: ./mvnw -B clean package -DskipTests --no-transfer-progress
@@ -65,7 +69,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag || github.ref }}
+          ref: ${{ github.ref }}
 
       - name: Set up GraalVM
         uses: graalvm/setup-graalvm@v1
@@ -77,6 +81,11 @@ jobs:
       - name: Set up Visual Studio shell (Windows only)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Set release version
+        if: inputs.tag
+        shell: bash
+        run: ./mvnw versions:set -DnewVersion=${{ inputs.tag }} -q
 
       - name: Build native image
         run: ./mvnw -B -Pnative package -DskipTests --no-transfer-progress
