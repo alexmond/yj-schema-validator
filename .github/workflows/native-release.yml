@@ -5,6 +5,10 @@ on:
     tags:
       - '[0-9]*'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. 2.0.3)'
+        required: true
 
 jobs:
   build-jar:
@@ -13,6 +17,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -58,6 +64,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
 
       - name: Set up GraalVM
         uses: graalvm/setup-graalvm@v1
@@ -104,7 +112,7 @@ jobs:
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ inputs.tag || github.ref_name }}
           files: |
             artifacts/yj-schema-validator-jar/*.jar
             artifacts/yj-schema-validator-linux-amd64/*
