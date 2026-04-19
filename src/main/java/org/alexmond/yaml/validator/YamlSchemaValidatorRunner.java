@@ -43,6 +43,9 @@ public class YamlSchemaValidatorRunner implements ApplicationRunner {
 		if (environment.matchesProfiles("test")) {
 			return;
 		}
+		if (System.getProperty("spring.aot.processing") != null) {
+			return;
+		}
 		FilesOutput filesOutput = validate(args);
 
 		if (filesOutput == null || filesOutput.isValid()) {

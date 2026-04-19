@@ -80,7 +80,7 @@ Three tools enforce code quality at the `validate` phase (all fail the build):
 
 ## Key Technical Details
 
-- **Java 17+** required
+- **Java 21+** required
 - **Jackson 3.x** — uses `tools.jackson` package namespace (not `com.fasterxml.jackson`)
 - **Lombok** — `@Data`, `@RequiredArgsConstructor`, `@Slf4j` used throughout
 - **JaCoCo** enforces minimum 80% line coverage
