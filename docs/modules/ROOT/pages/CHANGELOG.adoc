@@ -1,4 +1,5 @@
 include::_header.adoc[]
+- **2.0.3** Migrate to Jackson 3.x, upgrade to Spring Boot 4.0.5, add GraalVM native image support with multi-platform release workflow, add code style checks (Checkstyle, PMD, Spring Java Format), add Maven wrapper, update dependencies (json-schema-validator 3.0.2, central-publishing-maven-plugin 0.10.0)
 - **2.0.2** Upgrade to spring boot 4.0.2, streaming and stdin support
 - **2.0.1** Upgrade to spring boot 4.0.1
 - **2.0.0** Upgrade to networknt json-schema-validator 2.0.1
