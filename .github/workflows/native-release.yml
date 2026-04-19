@@ -1,0 +1,88 @@
+name: Build Native Images
+
+on:
+  push:
+    tags:
+      - '[0-9]*'
+
+jobs:
+  build-native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: yj-schema-validator-linux-amd64
+            extension: ''
+          - os: ubuntu-24.04-arm
+            artifact: yj-schema-validator-linux-arm64
+            extension: ''
+          - os: macos-13
+            artifact: yj-schema-validator-macos-amd64
+            extension: ''
+          - os: macos-latest
+            artifact: yj-schema-validator-macos-arm64
+            extension: ''
+          - os: windows-latest
+            artifact: yj-schema-validator-windows-amd64
+            extension: '.exe'
+
+    runs-on: ${{ matrix.os }}
+    name: Build ${{ matrix.artifact }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '17'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Visual Studio shell (Windows only)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Build native image
+        run: ./mvnw -B -Pnative native:compile -DskipTests --no-transfer-progress
+
+      - name: Rename artifact
+        shell: bash
+        run: mv target/yj-schema-validator${{ matrix.extension }} target/${{ matrix.artifact }}${{ matrix.extension }}
+
+      - name: Smoke test
+        shell: bash
+        run: |
+          ./target/${{ matrix.artifact }}${{ matrix.extension }} --help
+          ./target/${{ matrix.artifact }}${{ matrix.extension }} --schema=src/test/resources/testdata/sample-schema.json src/test/resources/testdata/valid.yaml
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: target/${{ matrix.artifact }}${{ matrix.extension }}
+
+  publish-release:
+    needs: build-native
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: |
+            artifacts/yj-schema-validator-linux-amd64/*
+            artifacts/yj-schema-validator-linux-arm64/*
+            artifacts/yj-schema-validator-macos-amd64/*
+            artifacts/yj-schema-validator-macos-arm64/*
+            artifacts/yj-schema-validator-windows-amd64/*
