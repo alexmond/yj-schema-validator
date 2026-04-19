@@ -329,8 +329,8 @@ public class YamlSchemaValidator {
 		catch (IOException | InterruptedException ex) {
 			String msg = "Error fetching schema from URL: " + schemaPath;
 			Throwable cause = ex;
-			if (ex instanceof IOException && ex.getCause() != null) {
-				cause = ex.getCause();
+			if (ex instanceof IOException ioEx && ioEx.getCause() != null) {
+				cause = ioEx.getCause();
 			}
 			log.error("{}, {}", msg, cause.getMessage());
 			throw new YamlValidationException(cause, null, schemaPath);
