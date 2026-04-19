@@ -6,6 +6,30 @@ on:
       - '[0-9]*'
 
 jobs:
+  build-jar:
+    runs-on: ubuntu-latest
+    name: Build fat JAR
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Build JAR
+        run: ./mvnw -B clean package -DskipTests --no-transfer-progress
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yj-schema-validator-jar
+          path: target/yj-schema-validator-*.jar
+          if-no-files-found: error
+
   build-native:
     strategy:
       fail-fast: false
@@ -65,7 +89,7 @@ jobs:
           path: target/${{ matrix.artifact }}${{ matrix.extension }}
 
   publish-release:
-    needs: build-native
+    needs: [build-jar, build-native]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -81,6 +105,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           files: |
+            artifacts/yj-schema-validator-jar/*.jar
             artifacts/yj-schema-validator-linux-amd64/*
             artifacts/yj-schema-validator-linux-arm64/*
             artifacts/yj-schema-validator-macos-amd64/*
