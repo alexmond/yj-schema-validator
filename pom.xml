@@ -248,7 +248,7 @@
                         <artifactId>native-maven-plugin</artifactId>
                         <configuration>
                             <imageName>yj-schema-validator</imageName>
-                            <buildArgs>
+                            <buildArgs combine.children="append">
                                 <buildArg>--no-fallback</buildArg>
                                 <buildArg>-H:+ReportExceptionStackTraces</buildArg>
                             </buildArgs>
