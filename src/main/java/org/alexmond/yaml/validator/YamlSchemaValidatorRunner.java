@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alexmond.yaml.validator.config.YamlSchemaValidatorConfig;
 import org.alexmond.yaml.validator.output.FilesOutput;
-import org.springframework.aot.AotDetector;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.env.Environment;
@@ -42,9 +41,6 @@ public class YamlSchemaValidatorRunner implements ApplicationRunner {
 	@Override
 	public void run(ApplicationArguments args) {
 		if (environment.matchesProfiles("test")) {
-			return;
-		}
-		if (AotDetector.useGeneratedArtifacts() || Boolean.getBoolean("spring.aot.processing")) {
 			return;
 		}
 		FilesOutput filesOutput = validate(args);
