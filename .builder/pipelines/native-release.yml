@@ -1,0 +1,30 @@
+name: Build Native Images
+on: [tag, manual]
+jobs:
+  build-jar:
+    image: eclipse-temurin:17-jdk
+    cache:
+      key: m2-yj-schema-validator
+      paths: [.m2/repository]
+    artifacts: [target/yj-schema-validator-*.jar]
+    steps:
+      - name: Checkout
+        run: git clone --depth 1 https://github.com/alexmond/yj-schema-validator.git .
+      - name: Build JAR
+        run: ./mvnw -B clean package -DskipTests --no-transfer-progress -Dmaven.repo.local=.m2/repository
+
+  build-native:
+    image: ghcr.io/graalvm/native-image-community:21
+    needs: [build-jar]
+    artifacts: [target/yj-schema-validator-linux-amd64]
+    steps:
+      - name: Checkout
+        run: git clone --depth 1 https://github.com/alexmond/yj-schema-validator.git .
+      - name: Build native image
+        run: ./mvnw -B -Pnative native:compile -DskipTests --no-transfer-progress
+      - name: Rename artifact
+        run: mv target/yj-schema-validator target/yj-schema-validator-linux-amd64
+      - name: Smoke test
+        run: |
+          ./target/yj-schema-validator-linux-amd64 --help
+          ./target/yj-schema-validator-linux-amd64 --schema=src/test/resources/testdata/sample-schema.json src/test/resources/testdata/valid.yaml

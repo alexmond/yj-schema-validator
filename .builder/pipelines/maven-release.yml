@@ -1,0 +1,29 @@
+name: Maven Release
+on: [manual]
+inputs:
+  releaseVersion:
+    type: string
+    description: Release version
+    required: true
+  nextVersion:
+    type: string
+    description: Next development version (with -SNAPSHOT suffix)
+    required: true
+jobs:
+  release:
+    image: eclipse-temurin:17-jdk
+    cache:
+      key: m2-yj-schema-validator
+      paths: [.m2/repository]
+    secrets: [OSSRH_USERNAME, OSSRH_PASSWORD, GPG_PRIVATE_KEY, GPG_PASSPHRASE]
+    steps:
+      - name: Checkout
+        run: git clone https://github.com/alexmond/yj-schema-validator.git .
+      - name: Prepare release version
+        run: ./mvnw versions:set -DnewVersion=$releaseVersion --no-transfer-progress -Dmaven.repo.local=.m2/repository
+      - name: Copy Maven settings.xml
+        run: |
+          mkdir -p ~/.m2
+          cp .github/settings.xml ~/.m2/settings.xml
+      - name: Deploy to Maven Central
+        run: ./mvnw --batch-mode -Dgpg.passphrase="$GPG_PASSPHRASE" clean deploy -Prelease --no-transfer-progress -Dmaven.repo.local=.m2/repository
