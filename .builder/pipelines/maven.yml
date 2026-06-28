@@ -1,5 +1,6 @@
 name: Java CI with Maven
 on: [push, manual]
+checkout: true
 push:
   branches: [main]
 jobs:
@@ -9,7 +10,5 @@ jobs:
       key: m2-yj-schema-validator
       paths: [.m2/repository]
     steps:
-      - name: Checkout
-        run: git clone --depth 1 https://github.com/alexmond/yj-schema-validator.git .
       - name: Build with Maven
         run: ./mvnw -B package --file pom.xml -Pdefault --no-transfer-progress -Dmaven.repo.local=.m2/repository

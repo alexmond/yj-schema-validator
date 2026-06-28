@@ -1,5 +1,6 @@
 name: Build Native Images
 on: [tag, manual]
+checkout: true
 jobs:
   build-jar:
     image: eclipse-temurin:17-jdk
@@ -8,8 +9,6 @@ jobs:
       paths: [.m2/repository]
     artifacts: [target/yj-schema-validator-*.jar]
     steps:
-      - name: Checkout
-        run: git clone --depth 1 https://github.com/alexmond/yj-schema-validator.git .
       - name: Build JAR
         run: ./mvnw -B clean package -DskipTests --no-transfer-progress -Dmaven.repo.local=.m2/repository
 
@@ -18,8 +17,6 @@ jobs:
     needs: [build-jar]
     artifacts: [target/yj-schema-validator-linux-amd64]
     steps:
-      - name: Checkout
-        run: git clone --depth 1 https://github.com/alexmond/yj-schema-validator.git .
       - name: Build native image
         run: ./mvnw -B -Pnative native:compile -DskipTests --no-transfer-progress
       - name: Rename artifact

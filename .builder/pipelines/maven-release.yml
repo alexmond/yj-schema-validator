@@ -1,5 +1,6 @@
 name: Maven Release
 on: [manual]
+checkout: true
 inputs:
   releaseVersion:
     type: string
@@ -17,8 +18,6 @@ jobs:
       paths: [.m2/repository]
     secrets: [OSSRH_USERNAME, OSSRH_PASSWORD, GPG_PRIVATE_KEY, GPG_PASSPHRASE]
     steps:
-      - name: Checkout
-        run: git clone https://github.com/alexmond/yj-schema-validator.git .
       - name: Prepare release version
         run: ./mvnw versions:set -DnewVersion=$releaseVersion --no-transfer-progress -Dmaven.repo.local=.m2/repository
       - name: Copy Maven settings.xml
