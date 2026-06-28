@@ -1,13 +1,12 @@
 name: Validate JSON with check-jsonschema
 on: [push, manual]
+checkout: true
 push:
   branches: [main]
 jobs:
   validate:
     image: python:3.12
     steps:
-      - name: Checkout
-        run: git clone --depth 1 https://github.com/alexmond/yj-schema-validator.git .
       - name: Install check-jsonschema
         run: pip install check-jsonschema
       - name: Run validation and generate JSON report
