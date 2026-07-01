@@ -1,5 +1,6 @@
 include::_header.adoc[]
 = YJ Schema Validator
+:description: CLI to validate YAML and JSON against JSON Schema (Draft 2019-09 and 2020-12), with colored, JSON, or JUnit output for CI pipelines.
 
 image::sample.png[Sample colored output, role="center", width=600]
 
