@@ -27,9 +27,24 @@ include::_header.adoc[]
 |`--schema-override=true`
 
 |`--report-type`
-|Validation report type: `text`, `json`, `yaml`, `junit`(alpha)
+|Validation report type: `text`, `json`, `yaml`, `junit`(alpha), `sarif`, `llm`
 |`text`
 |`--report-type=junit`
+
+|`--compact`
+|For `--report-type=llm`, emit compact compiler-style diagnostic lines instead of JSON
+|`false`
+|`--compact=true`
+
+|`--auto-detect`
+|Path-based schema autodetection via the JSON Schema Store catalog when no schema is given or declared
+|`true`
+|`--auto-detect=false`
+
+|`--catalog-url`
+|Schema Store catalog URL for autodetection (a snapshot is bundled as a fallback; empty = bundled only)
+|schemastore.org
+|`--catalog-url=`
 
 
 |`--report-file-name`
@@ -55,7 +70,8 @@ include::_header.adoc[]
 |===
 [#_config_file]
 == Config file
-Same options can be used in a config file **yj-schema-validator.yaml**
+Same options can be used in a Spring Boot config file **application.yaml** (or
+`application.yml` / `application.properties`) in the working directory
 
 .Schema files for config files:
 * link:https://www.alexmond.org/yj-schema-validator/current/yj-schema-validator-config.yaml[YAML Schema^]
@@ -65,7 +81,7 @@ Example config file
 
 [source,yaml]
 ----
-include::example$yj-schema-validator.yaml[]
+include::example$application.yaml[]
 ----
 [#_troubleshooting]
 == Troubleshooting

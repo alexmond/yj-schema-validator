@@ -161,4 +161,14 @@ public class FilesOutput {
 		return sarifOutput.toSarifString();
 	}
 
+	/**
+	 * Converts the validation results to an LLM-friendly report.
+	 * @param compact true for compiler-style diagnostic lines, false for structured JSON
+	 * @return LLM-oriented string representation of the validation results
+	 */
+	public String toLlmString(boolean compact) {
+		FilesOutputToLlm llmOutput = new FilesOutputToLlm(files);
+		return llmOutput.toLlmString(compact);
+	}
+
 }

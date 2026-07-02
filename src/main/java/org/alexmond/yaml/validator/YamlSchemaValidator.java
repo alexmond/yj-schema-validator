@@ -10,6 +10,7 @@ import com.networknt.schema.SpecificationVersion;
 import com.networknt.schema.output.OutputUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.alexmond.yaml.validator.catalog.SchemaDetector;
 import org.alexmond.yaml.validator.config.YamlSchemaValidatorConfig;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -54,6 +55,8 @@ public class YamlSchemaValidator {
 	private static final int HTTP_SUCCESS_STATUS = 200;
 
 	private final YamlSchemaValidatorConfig config;
+
+	private final SchemaDetector schemaDetector;
 
 	private final YAMLMapper yamlMapper = YAMLMapper.builder().build();
 
@@ -124,6 +127,9 @@ public class YamlSchemaValidator {
 				if (schemaPathFromNode != null) {
 					schemaPath = schemaPathFromNode;
 				}
+			}
+			if (schemaPath == null) {
+				schemaPath = schemaDetector.detect(filePath);
 			}
 			if (schemaPath == null) {
 				return genericError("No schema found in YAML file or provided as parameter");

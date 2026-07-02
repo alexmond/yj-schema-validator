@@ -24,6 +24,11 @@ public enum ReportType {
 	/**
 	 * Sarif format report
 	 */
-	SARIF
+	SARIF,
+	/**
+	 * Compact, agent-friendly report optimised for LLM consumption (structured JSON, or
+	 * compiler-style diagnostic lines when {@code compact} is enabled).
+	 */
+	LLM
 
 }

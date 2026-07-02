@@ -84,4 +84,30 @@ public class YamlSchemaValidatorConfig {
 	 */
 	private boolean color = true;
 
+	/**
+	 * Flag to enable path-based schema autodetection via the JSON Schema Store catalog.
+	 * Only consulted when no schema is supplied and none is declared in the file. Fails
+	 * soft: if no catalog pattern matches, validation falls back to the "no schema"
+	 * behaviour.
+	 *
+	 * @value true
+	 */
+	private boolean autoDetect = true;
+
+	/**
+	 * URL of the JSON Schema Store catalog used for autodetection. A snapshot is bundled
+	 * in the jar and used as a fallback when this URL cannot be fetched. Set to empty to
+	 * skip the live fetch and always use the bundled snapshot.
+	 */
+	private String catalogUrl = "https://www.schemastore.org/api/json/catalog.json";
+
+	/**
+	 * Flag controlling the shape of the {@code LLM} report. When true, emits compact
+	 * compiler-style diagnostic lines; when false, emits structured JSON. Ignored for
+	 * other report types.
+	 *
+	 * @value false
+	 */
+	private boolean compact;
+
 }
