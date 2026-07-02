@@ -2,11 +2,12 @@ name: Publish Image
 
 # Builds the OCI image with Spring Boot Cloud Native Buildpacks (no Dockerfile) and
 # pushes it to GHCR, where the reusable GitHub Action (action.yml) pulls it from.
-# Runs on release tags; also dispatchable manually.
+#
+# Manual re-publish tool: dispatch it on a release tag (`gh workflow run
+# publish-image.yml --ref <tag>`). Releases publish the image inline from
+# maven_release.yml — a `push: tags` trigger here would never fire, since tags pushed
+# with GITHUB_TOKEN do not trigger workflows.
 on:
-  push:
-    tags:
-      - '[0-9]*'
   workflow_dispatch:
 
 permissions:

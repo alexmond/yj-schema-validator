@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  packages: write
 
 jobs:
   release:
@@ -57,6 +58,24 @@ jobs:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+      # Publish the buildpacks image here (same job, POM still at the release version)
+      # rather than in a separate tag-triggered workflow: a tag pushed with GITHUB_TOKEN
+      # does not trigger other workflows, so a `push: tags` workflow would never fire.
+      - name: Publish image to GHCR (Spring Boot buildpacks)
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+          OWNER: ${{ github.repository_owner }}
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
+        run: |
+          set -euo pipefail
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+          ./mvnw -B spring-boot:build-image -DskipTests --no-transfer-progress
+          IMAGE="ghcr.io/${OWNER}/yj-schema-validator"
+          docker tag "${IMAGE}:${RELEASE_VERSION}" "${IMAGE}:latest"
+          docker push "${IMAGE}:${RELEASE_VERSION}"
+          docker push "${IMAGE}:latest"
 
       - name: Prepare for Next Development Version
         run: |
