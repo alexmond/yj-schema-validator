@@ -1,0 +1,51 @@
+name: Publish Image
+
+# Builds the OCI image with Spring Boot Cloud Native Buildpacks (no Dockerfile) and
+# pushes it to GHCR, where the reusable GitHub Action (action.yml) pulls it from.
+# Runs on release tags; also dispatchable manually.
+on:
+  push:
+    tags:
+      - '[0-9]*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build image with Spring Boot buildpacks
+        run: ./mvnw -B spring-boot:build-image -DskipTests --no-transfer-progress
+
+      - name: Push image (version + latest)
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/yj-schema-validator
+          VERSION: ${{ github.ref_type == 'tag' && github.ref_name || 'snapshot' }}
+        run: |
+          set -euo pipefail
+          # build-image tags with ${project.version}; resolve it from the POM.
+          POM_VERSION="$(./mvnw -q -DforceStdout help:evaluate -Dexpression=project.version)"
+          docker tag "${IMAGE}:${POM_VERSION}" "${IMAGE}:${VERSION}"
+          docker tag "${IMAGE}:${POM_VERSION}" "${IMAGE}:latest"
+          docker push "${IMAGE}:${VERSION}"
+          docker push "${IMAGE}:latest"

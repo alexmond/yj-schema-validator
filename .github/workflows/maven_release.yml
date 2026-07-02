@@ -10,17 +10,20 @@ on:
         description: 'Next development version (with -SNAPSHOT suffix)'
         required: true
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Important for git history
 
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -64,10 +67,14 @@ jobs:
         run: git push && git push --tags
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.releaseVersion }}
           name: Release ${{ github.event.inputs.releaseVersion }}
           generate_release_notes: true
+          # Attach the executable fat JAR built by the deploy step (still in target/;
+          # versions:set for the next dev version does not rebuild). Sources/javadoc
+          # jars are excluded by pinning the classifier-less name.
+          files: target/yj-schema-validator-${{ github.event.inputs.releaseVersion }}.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

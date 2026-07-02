@@ -1,0 +1,143 @@
+name: 'YJ Schema Validator'
+description: 'Validate YAML/JSON files against JSON Schema (drafts 2019-09/2020-12). Emits text, JSON, YAML, JUnit, or SARIF.'
+author: 'alexmond'
+
+branding:
+  icon: 'check-circle'
+  color: 'green'
+
+inputs:
+  files:
+    description: 'Whitespace/newline-separated file paths or globs to validate. If empty, reads from stdin.'
+    required: false
+    default: ''
+  schema:
+    description: 'Path or URL to the JSON Schema. If omitted, the $schema declared inside each file is used.'
+    required: false
+    default: ''
+  report:
+    description: 'Report format: text, json, yaml, junit, or sarif.'
+    required: false
+    default: 'text'
+  report-file:
+    description: 'Write the report to this file instead of stdout (required to upload SARIF).'
+    required: false
+    default: ''
+  schema-override:
+    description: 'If true, use the `schema` input even when a file declares its own $schema.'
+    required: false
+    default: 'false'
+  http-timeout:
+    description: 'Timeout for fetching remote schemas, e.g. 10s.'
+    required: false
+    default: ''
+  ignore-ssl-errors:
+    description: 'If true, ignore SSL certificate errors when fetching remote schemas.'
+    required: false
+    default: 'false'
+  color:
+    description: 'Colored console output. Off by default for clean CI logs.'
+    required: false
+    default: 'false'
+  extra-args:
+    description: 'Additional raw arguments passed straight through to the CLI.'
+    required: false
+    default: ''
+  fail-on-error:
+    description: 'Fail the step when validation finds errors. Set false to continue (e.g. to upload SARIF first).'
+    required: false
+    default: 'true'
+  image:
+    description: 'The Spring Boot buildpacks image to run. Pin to a version tag for reproducibility.'
+    required: false
+    default: 'ghcr.io/alexmond/yj-schema-validator:latest'
+
+outputs:
+  exit-code:
+    description: 'Validator exit code (0 = all valid, 1 = validation errors).'
+    value: ${{ steps.validate.outputs.exit-code }}
+  report-file:
+    description: 'Path to the written report file, when report-file was set.'
+    value: ${{ steps.validate.outputs.report-file }}
+
+runs:
+  using: 'composite'
+  steps:
+    - id: validate
+      shell: bash
+      env:
+        # Passed via env (not inlined into the script) to avoid shell injection.
+        INPUT_FILES: ${{ inputs.files }}
+        INPUT_SCHEMA: ${{ inputs.schema }}
+        INPUT_REPORT: ${{ inputs.report }}
+        INPUT_REPORT_FILE: ${{ inputs.report-file }}
+        INPUT_SCHEMA_OVERRIDE: ${{ inputs.schema-override }}
+        INPUT_HTTP_TIMEOUT: ${{ inputs.http-timeout }}
+        INPUT_IGNORE_SSL_ERRORS: ${{ inputs.ignore-ssl-errors }}
+        INPUT_COLOR: ${{ inputs.color }}
+        INPUT_EXTRA_ARGS: ${{ inputs.extra-args }}
+        INPUT_FAIL_ON_ERROR: ${{ inputs.fail-on-error }}
+        INPUT_IMAGE: ${{ inputs.image }}
+      run: |
+        set -euo pipefail
+        shopt -s globstar nullglob
+
+        args=()
+        add_flag() { # add --property=value only when value is non-empty
+          local prop="$1" val="$2"
+          if [ -n "$val" ]; then args+=("--${prop}=${val}"); fi
+        }
+        add_flag schema "${INPUT_SCHEMA:-}"
+        add_flag reportFileName "${INPUT_REPORT_FILE:-}"
+        add_flag schemaOverride "${INPUT_SCHEMA_OVERRIDE:-}"
+        add_flag httpTimeout "${INPUT_HTTP_TIMEOUT:-}"
+        add_flag ignoreSslErrors "${INPUT_IGNORE_SSL_ERRORS:-}"
+        add_flag color "${INPUT_COLOR:-}"
+
+        # reportType is an enum; accept any case and normalise to upper-case
+        if [ -n "${INPUT_REPORT:-}" ]; then
+          args+=("--reportType=$(printf '%s' "$INPUT_REPORT" | tr '[:lower:]' '[:upper:]')")
+        fi
+
+        # files: whitespace/newline-separated list, with glob expansion
+        files=()
+        if [ -n "${INPUT_FILES:-}" ]; then
+          # shellcheck disable=SC2206
+          tokens=( ${INPUT_FILES//$'\n'/ } )
+          for token in "${tokens[@]}"; do
+            # shellcheck disable=SC2206
+            expanded=( $token )
+            if [ ${#expanded[@]} -gt 0 ]; then
+              files+=("${expanded[@]}")
+            else
+              echo "::warning::no files matched pattern: ${token}"
+            fi
+          done
+        fi
+
+        extra=()
+        if [ -n "${INPUT_EXTRA_ARGS:-}" ]; then
+          # shellcheck disable=SC2206
+          extra=( ${INPUT_EXTRA_ARGS} )
+        fi
+
+        set +e
+        docker run --rm \
+          --user "$(id -u):$(id -g)" \
+          -v "${GITHUB_WORKSPACE}:/github/workspace" \
+          -w /github/workspace \
+          "${INPUT_IMAGE}" \
+          --spring.main.banner-mode=off --logging.level.root=WARN \
+          "${args[@]}" "${extra[@]}" "${files[@]}"
+        code=$?
+        set -e
+
+        {
+          echo "exit-code=${code}"
+          if [ -n "${INPUT_REPORT_FILE:-}" ]; then echo "report-file=${INPUT_REPORT_FILE}"; fi
+        } >> "$GITHUB_OUTPUT"
+
+        if [ "$code" -ne 0 ] && [ "${INPUT_FAIL_ON_ERROR:-true}" = "true" ]; then
+          exit "$code"
+        fi
+        exit 0
