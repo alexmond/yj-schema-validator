@@ -92,7 +92,47 @@ src/test/resources/multi3valid.yaml-1: ok
 src/test/resources/multi3valid.yaml-3: ok
 src/test/resources/multi3valid.yaml-2: ok
 ----
-=== CI/CD Integration Example (GitHub Actions)
+=== GitHub Action
+
+A reusable GitHub Action is published from this repo. It runs the validator inside a
+container image built with Spring Boot Cloud Native Buildpacks (no Dockerfile), so no
+Java setup is needed in the consumer workflow. *Linux runners only.*
+
+[source,yaml]
+----
+- uses: alexmond/yj-schema-validator@v2
+  with:
+    files: 'config/**/*.yaml'          # paths or globs (whitespace/newline separated)
+    schema: schema.json                # path or URL; omit to use each file's own $schema
+    report: text                       # text | json | yaml | junit | sarif
+----
+
+Upload findings to the GitHub Security tab as SARIF:
+
+[source,yaml]
+----
+- uses: alexmond/yj-schema-validator@v2
+  with:
+    files: 'config/**/*.yaml'
+    schema: schema.json
+    report: sarif
+    report-file: results.sarif
+    fail-on-error: 'false'             # don't fail the step; let code scanning surface issues
+- uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: results.sarif
+----
+
+Inputs: `files`, `schema`, `report`, `report-file`, `schema-override`, `http-timeout`,
+`ignore-ssl-errors`, `color`, `extra-args`, `fail-on-error`, `image`. Outputs:
+`exit-code`, `report-file`.
+
+NOTE: The tool auto-loads a Spring Boot `application.yaml` from the working directory
+(the repo root under `-w /github/workspace`). If your repo has one with top-level
+`files:`/`schema:` keys, *its settings override the action inputs* — remove those keys
+or rely on the file instead of inputs.
+
+=== Plain CLI in CI
 
 [source,yaml,subs=+attributes]
 ----
