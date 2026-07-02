@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.6</version>
+        <version>4.0.7</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>org.alexmond</groupId>
@@ -17,12 +17,12 @@
     <properties>
         <java.version>17</java.version>
 
-        <json-schema-validator.version>3.0.3</json-schema-validator.version>
+        <json-schema-validator.version>3.0.5</json-schema-validator.version>
 
-        <spring-boot-config-json-schema-starter.version>3.5.10.1</spring-boot-config-json-schema-starter.version>
+        <spring-boot-config-json-schema-starter.version>4.0.7.1</spring-boot-config-json-schema-starter.version>
 
         <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
-        <central-publishing-maven-plugin.version>0.10.0</central-publishing-maven-plugin.version>
+        <central-publishing-maven-plugin.version>0.11.0</central-publishing-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
 
         <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
@@ -115,6 +115,16 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- Cloud Native Buildpacks image, consumed by the GitHub Action.
+                         Build/publish with: mvn spring-boot:build-image -->
+                    <image>
+                        <name>ghcr.io/alexmond/${project.artifactId}:${project.version}</name>
+                        <env>
+                            <BP_JVM_VERSION>17</BP_JVM_VERSION>
+                        </env>
+                    </image>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -239,24 +249,6 @@
         </plugins>
     </build>
     <profiles>
-        <profile>
-            <id>native</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.graalvm.buildtools</groupId>
-                        <artifactId>native-maven-plugin</artifactId>
-                        <configuration>
-                            <imageName>yj-schema-validator</imageName>
-                            <buildArgs>
-                                <buildArg>--no-fallback</buildArg>
-                                <buildArg>-H:+ReportExceptionStackTraces</buildArg>
-                            </buildArgs>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <profile>
             <id>release</id>
             <build>
