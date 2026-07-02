@@ -10,6 +10,9 @@ on:
         description: 'Next development version (with -SNAPSHOT suffix)'
         required: true
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -69,5 +72,9 @@ jobs:
           tag_name: ${{ github.event.inputs.releaseVersion }}
           name: Release ${{ github.event.inputs.releaseVersion }}
           generate_release_notes: true
+          # Attach the executable fat JAR built by the deploy step (still in target/;
+          # versions:set for the next dev version does not rebuild). Sources/javadoc
+          # jars are excluded by pinning the classifier-less name.
+          files: target/yj-schema-validator-${{ github.event.inputs.releaseVersion }}.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
